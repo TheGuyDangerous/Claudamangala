@@ -17,13 +17,16 @@
   <rect width="1280" height="360" fill="url(#bg)"/>
   <rect width="1280" height="360" fill="url(#glow)"/>
 
-  <!-- decorative key-badge icon, echoing the app's menu bar glyph -->
+  <!-- Claude spark mark -->
   <g transform="translate(120,120)" filter="url(#soft)">
     <circle cx="60" cy="60" r="60" fill="#ffffff" fill-opacity="0.08"/>
     <circle cx="60" cy="60" r="60" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="2"/>
-    <path d="M40 55 a20 20 0 1 1 20 20 a20 20 0 0 1 -14 -6 l-26 26 v10 h10 l4 -4 h8 v-8 l4 -4 l6 6 l8 -8 z"
-          transform="translate(6,-10) scale(0.62)"
-          fill="#ffffff" fill-opacity="0.85"/>
+    <g transform="translate(60,60) scale(0.34)">
+      <path fill="#D97757" d="M14.2-93.5c-8.8 24.6-22.8 38.6-47.4 47.4 24.6 8.8 38.6 22.8 47.4 47.4 8.8-24.6 22.8-38.6 47.4-47.4-24.6-8.8-38.6-22.8-47.4-47.4Z"/>
+      <path fill="#D97757" d="M-33.2-14.2c-24.6 8.8-38.6 22.8-47.4 47.4 24.6-8.8 38.6-22.8 47.4-47.4 8.8 24.6 22.8 38.6 47.4 47.4-24.6 8.8-38.6 22.8-47.4 47.4-8.8-24.6-22.8-38.6-47.4-47.4 24.6-8.8 38.6-22.8 47.4-47.4Z"/>
+      <path fill="#D97757" d="M33.2-14.2c8.8 24.6 22.8 38.6 47.4 47.4-24.6 8.8-38.6 22.8-47.4 47.4-8.8-24.6-22.8-38.6-47.4-47.4 24.6-8.8 38.6-22.8 47.4-47.4 24.6 8.8 38.6 22.8 47.4 47.4-24.6-8.8-38.6-22.8-47.4-47.4Z"/>
+      <path fill="#D97757" d="M-14.2 33.2c8.8 24.6 22.8 38.6 47.4 47.4-24.6 8.8-38.6 22.8-47.4 47.4-8.8-24.6-22.8-38.6-47.4-47.4 24.6-8.8 38.6-22.8 47.4-47.4 24.6 8.8 38.6 22.8 47.4 47.4-24.6-8.8-38.6-22.8-47.4-47.4Z"/>
+    </g>
   </g>
 
   <text x="280" y="165" font-family="'SF Pro Display','Helvetica Neue',Arial,sans-serif" font-size="72" font-weight="700" fill="#ffffff">Claudamangala</text>

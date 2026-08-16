@@ -109,7 +109,7 @@ xcodebuild -scheme Claudamangala -configuration Debug build
 open ~/Library/Developer/Xcode/DerivedData/Claudamangala-*/Build/Products/Debug/Claudamangala.app
 ```
 
-The app lives in the menu bar as **person.badge.key**.
+The app lives in the menu bar with the **Claude spark** icon.
 
 ## CI — build a DMG
 
@@ -148,6 +148,14 @@ Claudamangala/
 ├── Services/                   # Firebase REST, Firestore, pipeline, Keychain
 ├── GoogleService-Info.plist    # gitignored — Firebase web API key
 └── PipelineConfig.plist        # gitignored — GitHub dispatch credentials
+```
+
+## Regenerating icons
+
+Source SVGs live in `Claudamangala/Resources/`. Re-rasterize after editing:
+
+```bash
+./scripts/generate-icons.sh
 ```
 
 ## Regenerating screenshots

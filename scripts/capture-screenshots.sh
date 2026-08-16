@@ -24,7 +24,7 @@ tell application "System Events"
   tell process "Claudamangala"
     set frontmost to true
     if (count of windows) is 0 then
-      click menu bar item "person.badge.key" of menu bar 2
+      click first menu bar item of menu bar 2
       delay 0.8
     end if
     set w to first window
