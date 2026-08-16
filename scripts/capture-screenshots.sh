@@ -80,5 +80,8 @@ end tell
 APPLESCRIPT
 )
 
-osascript -e "do shell script \"screencapture -x -R$bounds '$OUT'\""
+RAW="/tmp/claudamangala-screenshot-raw.png"
+osascript -e "do shell script \"screencapture -x -R$bounds '$RAW'\""
+swift "$ROOT/scripts/composite-screenshot.swift" "$RAW" "$OUT"
+rm -f "$RAW"
 echo "✓ $OUT ($bounds)"

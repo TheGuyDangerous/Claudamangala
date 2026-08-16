@@ -40,40 +40,42 @@ struct AccountRowView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(spacing: 8) {
-                Spacer()
+            liquidGlassCluster {
+                HStack(spacing: 8) {
+                    Spacer()
 
-                Button {
-                    onRefresh()
-                } label: {
-                    if isRefreshing {
-                        HStack(spacing: 6) {
-                            ProgressView().controlSize(.mini)
-                            Text("Refreshing…")
+                    Button {
+                        onRefresh()
+                    } label: {
+                        if isRefreshing {
+                            HStack(spacing: 6) {
+                                ProgressView().controlSize(.mini)
+                                Text("Refreshing…")
+                            }
+                        } else {
+                            Text("Refresh")
                         }
-                    } else {
-                        Text("Refresh")
                     }
-                }
-                .buttonStyle(.glass)
-                .disabled(isRefreshing)
+                    .buttonStyle(.glass)
+                    .disabled(isRefreshing)
 
-                Button {
-                    copyCredentials()
-                } label: {
-                    Text(justCopied ? "Copied ✓" : "Copy")
-                }
-                .buttonStyle(.glass)
-                .disabled(isRefreshing)
-                .help("Copy credentials JSON to clipboard")
+                    Button {
+                        copyCredentials()
+                    } label: {
+                        Text(justCopied ? "Copied ✓" : "Copy")
+                    }
+                    .buttonStyle(.glass)
+                    .disabled(isRefreshing)
+                    .help("Copy credentials JSON to clipboard")
 
-                Button {
-                    onApply()
-                } label: {
-                    Text(isJustApplied ? "Applied ✓" : "Apply")
+                    Button {
+                        onApply()
+                    } label: {
+                        Text(isJustApplied ? "Applied ✓" : "Apply")
+                    }
+                    .buttonStyle(.glass)
+                    .disabled(isRefreshing)
                 }
-                .buttonStyle(.glass)
-                .disabled(isRefreshing)
             }
         }
         .padding(.vertical, 6)
