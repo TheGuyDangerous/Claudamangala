@@ -1,11 +1,5 @@
 <p align="center">
-  <img src="docs/banner.svg" alt="Claudamangala — Claude Code account switcher for macOS" width="100%">
-</p>
-
-<p align="center">
-  <img src="docs/app-icon.png" alt="Claudamangala app icon" width="96" height="96">
-  &nbsp;&nbsp;
-  <img src="docs/menubar-icon.png" alt="Claude spark menu bar icon" width="36" height="36">
+  <img src="docs/banner.png" alt="Claudamangala — Claude Code account switcher for macOS">
 </p>
 
 # Claudamangala
@@ -17,17 +11,6 @@ A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored i
   &nbsp;&nbsp;
   <img src="docs/screenshots/accounts.png" alt="Account list with refresh, copy, and apply" width="420">
 </p>
-
-## Branding
-
-| Asset | File | Used for |
-|-------|------|----------|
-| App icon | [`docs/app-icon.png`](docs/app-icon.png) | Dock, Finder, DMG, README |
-| Menu bar icon | [`docs/menubar-icon.png`](docs/menubar-icon.png) | `MenuBarExtra` status item |
-| Claude spark (SVG) | [`docs/claude-spark.svg`](docs/claude-spark.svg) | Source mark, banners |
-| README banner | [`docs/banner.svg`](docs/banner.svg) / [`docs/banner.png`](docs/banner.png) | GitHub repo header |
-
-Icons are generated from `Claudamangala/Resources/claude-logo.svg` and `app-icon.svg` via `./scripts/generate-icons.sh` (requires `brew install librsvg`).
 
 ## Features
 
@@ -188,7 +171,7 @@ Source SVGs live in `Claudamangala/Resources/`. Requires `brew install librsvg`.
 ./scripts/generate-icons.sh
 ```
 
-This updates `Assets.xcassets` and syncs `docs/app-icon.png`, `docs/menubar-icon.png`, `docs/claude-spark.svg`, and `docs/banner.png`.
+This updates `Assets.xcassets` and syncs `docs/banner.png`, `docs/app-icon.png`, `docs/menubar-icon.png`, and `docs/claude-spark.svg`.
 
 ## Regenerating screenshots
 

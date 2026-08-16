@@ -41,7 +41,7 @@ mkdir -p "$DOCS/screenshots"
 cp "$MENUBAR_SVG" "$DOCS/claude-spark.svg"
 cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
 cp "$ASSETS/MenuBarIcon.imageset/menubar@3x.png" "$DOCS/menubar-icon.png"
-rsvg-convert -w 1280 -h 360 "$DOCS/banner.svg" -o "$DOCS/banner.png"
+swift "$ROOT/scripts/generate-banner.swift" "$ROOT"
 
 echo "✓ Icons generated in $ASSETS"
 echo "✓ Docs assets synced to $DOCS"
