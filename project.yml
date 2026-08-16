@@ -1,0 +1,33 @@
+name: Claudamangala
+options:
+  bundleIdPrefix: com.sannidhya
+  deploymentTarget:
+    macOS: "14.0"
+
+targets:
+  Claudamangala:
+    type: application
+    platform: macOS
+    sources:
+      - path: Claudamangala
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sannidhya.claude
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+    info:
+      path: Claudamangala/Info.plist
+      properties:
+        CFBundleName: Claudamangala
+        CFBundleDisplayName: Claudamangala
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: ""
+    entitlements:
+      path: Claudamangala/Claudamangala.entitlements
+      properties:
+        com.apple.security.app-sandbox: false

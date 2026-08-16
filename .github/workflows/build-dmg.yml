@@ -1,0 +1,110 @@
+name: Build DMG
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write   # only needed for the tag-triggered release-upload step
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Restore GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GOOGLE_SERVICE_INFO_PLIST_BASE64" ]; then
+            echo "::error::GOOGLE_SERVICE_INFO_PLIST_BASE64 secret is not set."
+            exit 1
+          fi
+          echo "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > Claudamangala/GoogleService-Info.plist
+          echo "✓ GoogleService-Info.plist restored (never committed to the repo)"
+
+      - name: Restore PipelineConfig.plist
+        env:
+          PIPELINE_CONFIG_PLIST_BASE64: ${{ secrets.PIPELINE_CONFIG_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "$PIPELINE_CONFIG_PLIST_BASE64" ]; then
+            echo "::error::PIPELINE_CONFIG_PLIST_BASE64 secret is not set."
+            exit 1
+          fi
+          echo "$PIPELINE_CONFIG_PLIST_BASE64" | base64 --decode > Claudamangala/PipelineConfig.plist
+          echo "✓ PipelineConfig.plist restored (never committed to the repo)"
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Resolve Swift Package dependencies
+        run: xcodebuild -resolvePackageDependencies -project Claudamangala.xcodeproj
+
+      - name: Build (Release, ad-hoc signed)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project Claudamangala.xcodeproj \
+            -scheme Claudamangala \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: Package DMG
+        run: |
+          set -euo pipefail
+          APP_PATH="build/Build/Products/Release/Claudamangala.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::Built app not found at $APP_PATH"
+            exit 1
+          fi
+
+          mkdir -p dist
+          cp -R "$APP_PATH" dist/
+          ln -s /Applications dist/Applications
+
+          VERSION="${GITHUB_REF_NAME:-dev}"
+          DMG_NAME="Claudamangala-${VERSION}.dmg"
+
+          hdiutil create -volname "Claudamangala" \
+            -srcfolder dist \
+            -ov -format UDZO \
+            "$DMG_NAME"
+
+          echo "DMG_NAME=$DMG_NAME" >> "$GITHUB_ENV"
+
+      - name: Note on Gatekeeper (ad-hoc signed, not notarized)
+        run: |
+          echo "## Build Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "This DMG is **ad-hoc signed, not notarized** (no Apple Developer Program membership configured)." >> "$GITHUB_STEP_SUMMARY"
+          echo "On first launch, macOS will show an 'unidentified developer' warning — right-click the app → **Open** once to bypass it." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DMG_NAME }}
+          path: ${{ env.DMG_NAME }}
+          retention-days: 30
+
+      - name: Create GitHub Release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG_NAME }}
+          generate_release_notes: true

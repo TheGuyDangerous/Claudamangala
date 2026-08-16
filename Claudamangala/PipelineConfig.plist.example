@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>githubOwner</key>
+	<string>your-github-username</string>
+	<key>githubRepo</key>
+	<string>claudes-plan</string>
+	<key>workflowFile</key>
+	<string>refresh-claude-tokens.yml</string>
+	<key>defaultBranch</key>
+	<string>master</string>
+	<key>dispatchToken</key>
+	<string>ghp_YOUR_FINE_GRAINED_PAT_WITH_ACTIONS_SCOPE</string>
+	<key>dispatchSecret</key>
+	<string>your-workflow-dispatch-secret-must-match-github-secret</string>
+</dict>
+</plist>
