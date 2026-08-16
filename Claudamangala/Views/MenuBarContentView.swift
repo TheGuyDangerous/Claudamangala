@@ -28,7 +28,6 @@ struct MenuBarContentView: View {
             }
         }
         .id(authViewModel.isSignedIn)
-        .background(Color(red: 0.14, green: 0.14, blue: 0.15))
         .onChange(of: authViewModel.isSignedIn) { _, signedIn in
             if signedIn, let session = authViewModel.session {
                 accountsViewModel.startListening(session: session)
