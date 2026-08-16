@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banner.png" alt="Claudamangala — Claude Code account switcher for macOS">
+  <img src="docs/menubar-icon.png" alt="Claudamangala" width="72">
 </p>
 
 # Claudamangala
@@ -156,10 +156,9 @@ Claudamangala/
 └── PipelineConfig.plist        # gitignored — GitHub dispatch credentials
 
 docs/
-├── banner.svg / banner.png     # README header
-├── app-icon.png                # Exported AppIcon preview
-├── menubar-icon.png            # Exported menu bar glyph
+├── menubar-icon.png            # Transparent Claude spark (README + reference)
 ├── claude-spark.svg            # Shared spark source
+├── app-icon.png                # Exported AppIcon preview
 └── screenshots/                # README UI captures
 ```
 
@@ -171,7 +170,7 @@ Source SVGs live in `Claudamangala/Resources/`. Requires `brew install librsvg`.
 ./scripts/generate-icons.sh
 ```
 
-This updates `Assets.xcassets` and syncs `docs/banner.png`, `docs/app-icon.png`, `docs/menubar-icon.png`, and `docs/claude-spark.svg`.
+This updates `Assets.xcassets` and syncs `docs/menubar-icon.png`, `docs/app-icon.png`, and `docs/claude-spark.svg`.
 
 ## Regenerating screenshots
 

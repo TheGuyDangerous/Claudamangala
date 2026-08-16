@@ -40,8 +40,8 @@ DOCS="$ROOT/docs"
 mkdir -p "$DOCS/screenshots"
 cp "$MENUBAR_SVG" "$DOCS/claude-spark.svg"
 cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
-cp "$ASSETS/MenuBarIcon.imageset/menubar@3x.png" "$DOCS/menubar-icon.png"
-swift "$ROOT/scripts/generate-banner.swift" "$ROOT"
+# README header — single transparent spark, crisp at 72pt display
+render "$MENUBAR_SVG" 144 "$DOCS/menubar-icon.png"
 
 echo "✓ Icons generated in $ASSETS"
 echo "✓ Docs assets synced to $DOCS"
