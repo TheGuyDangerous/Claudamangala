@@ -44,8 +44,6 @@ struct FirestoreRESTService {
         return account
     }
 
-    /// Lightweight snapshot for fast refresh-completion polling (raw timestamp strings
-    /// so we don't depend on Date parsing).
     func fetchRefreshSnapshot(accountId: String) async throws -> AccountRefreshSnapshot {
         let url = URL(string: "\(baseURL)/claude_accounts/\(accountId)")!
         var request = URLRequest(url: url)
@@ -166,8 +164,6 @@ struct FirestoreRESTService {
         let (data, response) = try await URLSession.shared.data(for: request)
         try throwIfHTTPError(data: data, response: response)
     }
-
-    // MARK: - Private
 
     private func patch(path: String, body: [String: Any], fieldPaths: [String]) async throws {
         var components = URLComponents(string: "\(baseURL)/\(path)")!
@@ -300,8 +296,6 @@ private enum FirestoreValue {
         (field as? [String: Any])?["timestampValue"] as? String
     }
 
-    /// Firestore REST returns RFC3339 timestamps with 3–9 fractional digits;
-    /// `ISO8601DateFormatter` only accepts up to 3.
     static func parseFirestoreTimestamp(_ timestamp: String) -> Date? {
         let normalized = normalizeFractionalSeconds(timestamp)
 

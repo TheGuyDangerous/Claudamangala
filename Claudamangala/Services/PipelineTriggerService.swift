@@ -44,8 +44,6 @@ struct PipelineTriggerService {
         try await waitForFirestoreRefresh(accountId: accountId, baseline: baseline)
     }
 
-    // MARK: - Remote dispatch
-
     private func dispatchWorkflow(config: PipelineConfig, accountId: String) async throws {
         let encodedWorkflow = config.workflowFile.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? config.workflowFile
         let url = URL(string: "https://api.github.com/repos/\(config.githubOwner)/\(config.githubRepo)/actions/workflows/\(encodedWorkflow)/dispatches")!
@@ -73,8 +71,6 @@ struct PipelineTriggerService {
             throw PipelineTriggerError.dispatchFailed(detail)
         }
     }
-
-    // MARK: - Firestore polling (fast path)
 
     private func waitForFirestoreRefresh(
         accountId: String,

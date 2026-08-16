@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Rasterize SVG sources into the asset catalog PNGs.
-# Requires: brew install librsvg  (rsvg-convert, transparent background)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -22,12 +20,10 @@ render() {
   rsvg-convert -b none -w "$size" -h "$size" "$svg" -o "$out"
 }
 
-# Menu bar — transparent canvas, official Claude spark only
 render "$MENUBAR_SVG" 18  "$ASSETS/MenuBarIcon.imageset/menubar@1x.png"
 render "$MENUBAR_SVG" 36  "$ASSETS/MenuBarIcon.imageset/menubar@2x.png"
 render "$MENUBAR_SVG" 54  "$ASSETS/MenuBarIcon.imageset/menubar@3x.png"
 
-# macOS app icon sizes (includes dark rounded background in SVG)
 render "$APP_SVG" 16   "$ASSETS/AppIcon.appiconset/icon_16.png"
 render "$APP_SVG" 32   "$ASSETS/AppIcon.appiconset/icon_32.png"
 render "$APP_SVG" 64   "$ASSETS/AppIcon.appiconset/icon_64.png"
@@ -40,7 +36,6 @@ DOCS="$ROOT/docs"
 mkdir -p "$DOCS/screenshots"
 cp "$MENUBAR_SVG" "$DOCS/claude-spark.svg"
 cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
-# README header — single transparent spark, crisp at 72pt display
 render "$MENUBAR_SVG" 144 "$DOCS/menubar-icon.png"
 
 echo "✓ Icons generated in $ASSETS"

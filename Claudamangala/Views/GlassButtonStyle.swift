@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Neutral glass-style buttons — no system accent (blue) fill.
 struct GlassButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 

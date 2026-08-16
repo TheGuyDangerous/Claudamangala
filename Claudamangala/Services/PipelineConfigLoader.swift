@@ -1,8 +1,6 @@
 import Foundation
 
 enum PipelineConfigLoader {
-    /// Prefer bundled `PipelineConfig.plist` (gitignored). Fall back to Firestore
-    /// when rules allow reading `app_config/pipeline`.
     static func load(firestore: FirestoreRESTService? = nil) async throws -> PipelineConfig {
         if let bundled = loadFromBundle() {
             return bundled

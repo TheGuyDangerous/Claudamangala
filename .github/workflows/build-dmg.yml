@@ -7,7 +7,7 @@ on:
       - "v*.*.*"
 
 permissions:
-  contents: write   # only needed for the tag-triggered release-upload step
+  contents: write
 
 jobs:
   build:

@@ -1,7 +1,5 @@
 import Foundation
 
-/// Email/password auth via Firebase Identity Toolkit REST API.
-/// Avoids Firebase Auth SDK keychain access, which fails on unsigned macOS builds (error 17995).
 @MainActor
 final class FirebaseSession {
     private(set) var email: String
@@ -17,8 +15,6 @@ final class FirebaseSession {
         self.refreshToken = refreshToken
         self.expiresAt = Date().addingTimeInterval(expiresIn)
     }
-
-    // MARK: - Public API
 
     static func signIn(email: String, password: String) async throws -> FirebaseSession {
         let url = URL(string: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=\(FirebaseConfig.apiKey)")!
@@ -106,8 +102,6 @@ final class FirebaseSession {
     func signOut() {
         Self.clearStoredSession()
     }
-
-    // MARK: - Private
 
     private func refresh() async throws {
         let url = URL(string: "https://securetoken.googleapis.com/v1/token?key=\(FirebaseConfig.apiKey)")!

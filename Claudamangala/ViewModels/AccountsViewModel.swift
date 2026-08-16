@@ -54,8 +54,6 @@ final class AccountsViewModel {
         }
     }
 
-    // MARK: - Rename
-
     func rename(accountId: String, newLabel: String) async {
         guard let firestore else { return }
         do {
@@ -66,9 +64,6 @@ final class AccountsViewModel {
         }
     }
 
-    // MARK: - Add
-
-    /// Writes the same field set the Firestore account schema expects.
     func addAccount(docId: String, label: String, credentials: ClaudeOAuthCredentials) async throws {
         guard let firestore else { return }
 
@@ -79,8 +74,6 @@ final class AccountsViewModel {
         try await firestore.createAccount(docId: docId, label: label, credentials: credentials)
         await refreshAccounts()
     }
-
-    // MARK: - Pipeline refresh
 
     func triggerPipelineRefresh(accountId: String?) async throws {
         guard let accountId else { throw PipelineTriggerError.invalidAccount }
@@ -97,8 +90,6 @@ final class AccountsViewModel {
         guard let accountId else { return false }
         return refreshingAccountIds.contains(accountId)
     }
-
-    // MARK: - Apply
 
     func applyAccount(_ account: ClaudeAccount) throws {
         let credentials = ClaudeOAuthCredentials(

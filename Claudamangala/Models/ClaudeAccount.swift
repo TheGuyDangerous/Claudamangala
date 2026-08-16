@@ -1,8 +1,5 @@
 import Foundation
 
-/// Mirrors a `claude_accounts/{id}` Firestore document. Field names and types
-/// must stay in sync with the shared schema — `expiresAt` in particular is a
-/// raw ms-epoch number, not a Firestore Timestamp.
 struct ClaudeAccount: Codable, Identifiable, Equatable {
     var id: String?
     var label: String
@@ -33,7 +30,6 @@ struct ClaudeAccount: Codable, Identifiable, Equatable {
         return remainingMs <= 2 * 60 * 60 * 1000
     }
 
-    /// `~/.claude/.credentials.json` shape for clipboard copy.
     func credentialsClipboardJSON() throws -> String {
         let oauth: [String: Any] = [
             "accessToken": accessToken,

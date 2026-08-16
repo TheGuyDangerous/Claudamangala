@@ -88,8 +88,6 @@ struct AccountRowView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 justCopied = false
             }
-        } catch {
-            // Silent fail in row — parent can surface errors later if needed.
-        }
+        } catch {}
     }
 }

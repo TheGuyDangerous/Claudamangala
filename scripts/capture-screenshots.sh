@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Capture README screenshots for Claudamangala.
-# Requires: Accessibility + Screen Recording for Terminal (or run via osascript).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
