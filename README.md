@@ -7,9 +7,7 @@
 A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored in **Firebase Firestore**. Sign in, view token expiry, switch accounts to your Mac Keychain, copy credentials, or request a per-account token refresh.
 
 <p align="center">
-  <img src="docs/screenshots/sign-in.png" alt="Sign-in screen" width="300">
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/accounts.png" alt="Account list with refresh, copy, and apply" width="420">
+  <img src="docs/screenshots/app.png" alt="Claudamangala account list" width="420">
 </p>
 
 ## Features
@@ -151,6 +149,7 @@ docs/
 ├── claude-spark.svg
 ├── app-icon.png
 └── screenshots/
+    └── app.png
 ```
 
 ## Regenerating icons & docs assets
@@ -165,10 +164,10 @@ Requires `brew install librsvg`.
 
 ```bash
 chmod +x scripts/capture-screenshots.sh
-./scripts/capture-screenshots.sh
+CLAUDAMANGALA_EMAIL=you@example.com CLAUDAMANGALA_PASSWORD=secret ./scripts/capture-screenshots.sh
 ```
 
-Grant **Accessibility** and **Screen Recording** to Terminal when prompted.
+Optional env vars sign in before capture. Grant **Accessibility** and **Screen Recording** to Terminal when prompted.
 
 ## License
 
