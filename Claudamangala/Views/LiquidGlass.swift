@@ -14,15 +14,19 @@ func liquidGlassCluster<Content: View>(@ViewBuilder content: () -> Content) -> s
 extension View {
     @ViewBuilder
     func liquidGlassSurface(cornerRadius: CGFloat = 8) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+
         if #available(macOS 26.0, *) {
-            glassEffect(in: .rect(cornerRadius: cornerRadius, style: .continuous))
+            glassEffect(in: shape)
+                .overlay {
+                    shape.strokeBorder(.primary.opacity(0.12), lineWidth: 0.5)
+                }
         } else {
             background {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                shape
                     .fill(.ultraThinMaterial)
                     .overlay {
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .strokeBorder(.primary.opacity(0.12), lineWidth: 0.5)
+                        shape.strokeBorder(.primary.opacity(0.12), lineWidth: 0.5)
                     }
             }
         }
