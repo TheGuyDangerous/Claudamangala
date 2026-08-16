@@ -25,7 +25,7 @@ enum PipelineTriggerError: LocalizedError {
         case .dispatchFailed(let detail):
             return "Could not start refresh (\(detail))."
         case .timedOut:
-            return "Refresh is taking longer than expected — check GitHub Actions."
+            return "Refresh is taking longer than expected — check the pipeline."
         case .refreshFailed(let detail):
             return "Refresh failed (\(detail))."
         }
@@ -44,7 +44,7 @@ struct PipelineTriggerService {
         try await waitForFirestoreRefresh(accountId: accountId, baseline: baseline)
     }
 
-    // MARK: - GitHub dispatch
+    // MARK: - Remote dispatch
 
     private func dispatchWorkflow(config: PipelineConfig, accountId: String) async throws {
         let encodedWorkflow = config.workflowFile.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? config.workflowFile

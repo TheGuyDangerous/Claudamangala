@@ -5,14 +5,14 @@
 	<key>githubOwner</key>
 	<string>your-github-username</string>
 	<key>githubRepo</key>
-	<string>claudes-plan</string>
+	<string>your-pipeline-repo</string>
 	<key>workflowFile</key>
-	<string>refresh-claude-tokens.yml</string>
+	<string>your-workflow.yml</string>
 	<key>defaultBranch</key>
 	<string>master</string>
 	<key>dispatchToken</key>
 	<string>ghp_YOUR_FINE_GRAINED_PAT_WITH_ACTIONS_SCOPE</string>
 	<key>dispatchSecret</key>
-	<string>your-workflow-dispatch-secret-must-match-github-secret</string>
+	<string>your-dispatch-secret</string>
 </dict>
 </plist>

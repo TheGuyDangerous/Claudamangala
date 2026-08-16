@@ -1,8 +1,8 @@
 import Foundation
 
-/// Mirrors a `claude_accounts/{id}` document exactly. Field names and types
-/// must match `claude-token-keeper-core`'s schema — `expiresAt` in particular
-/// is a raw ms-epoch number, not a Firestore Timestamp.
+/// Mirrors a `claude_accounts/{id}` Firestore document. Field names and types
+/// must stay in sync with the shared schema — `expiresAt` in particular is a
+/// raw ms-epoch number, not a Firestore Timestamp.
 struct ClaudeAccount: Codable, Identifiable, Equatable {
     var id: String?
     var label: String

@@ -4,7 +4,7 @@
 
 # Claudamangala
 
-A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored in **Firebase Firestore**. Sign in, view token expiry, switch accounts to your Mac Keychain, copy credentials, or trigger a per-account refresh via GitHub Actions.
+A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored in **Firebase Firestore**. Sign in, view token expiry, switch accounts to your Mac Keychain, copy credentials, or request a per-account token refresh.
 
 <p align="center">
   <img src="docs/screenshots/sign-in.png" alt="Sign-in screen" width="300">
@@ -14,48 +14,40 @@ A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored i
 
 ## Features
 
-- **Claude spark branding** — official Anthropic spark in the menu bar (transparent) and on the app icon
+- **Claude spark branding** — spark mark in the menu bar (transparent) and on the app icon
 - **Firebase sign-in** — email/password auth via REST (no Firebase SDK keychain issues on unsigned builds)
 - **Live account list** — polls Firestore every 5 seconds for expiry and refresh status
 - **Apply** — replaces the active `claudeAiOauth` Keychain entry on this Mac
 - **Copy** — copies `{"claudeAiOauth":{...}}` JSON to the clipboard
-- **Refresh** — dispatches the public [`claudes-plan`](https://github.com/TheGuyDangerous/claudes-plan) workflow for a single account
+- **Refresh** — asks a remote pipeline to refresh one account on demand
 - **Rename / Add** — inline panels (no sheets — works reliably inside `MenuBarExtra`)
 - **Glass UI** — compact ~400px popup, no system blue accent
 
-## Architecture
+## How it fits together
 
 ```mermaid
 flowchart LR
-  subgraph macOS["Claudamangala (macOS)"]
-    UI[Menu bar UI]
+  subgraph macOS["Your Mac"]
+    App[Claudamangala]
     KC[Keychain]
-    UI --> KC
+    App --> KC
   end
 
-  subgraph firebase["Firebase"]
-    Auth[Auth REST]
+  subgraph cloud["Cloud"]
     FS[(Firestore\nclaude_accounts)]
+    Pipe[Token refresh pipeline]
   end
 
-  subgraph github["GitHub Actions"]
-    WF[refresh-claude-tokens.yml]
-    Core[claude-token-keeper-core]
-    WF --> Core
-  end
-
-  UI --> Auth
-  UI --> FS
-  UI -->|workflow_dispatch| WF
-  Core --> FS
+  App --> FS
+  App -->|refresh| Pipe
+  Pipe --> FS
 ```
 
-| Piece | Repo / service |
-|-------|----------------|
-| Menu-bar app | **this repo** |
-| Public cron + manual dispatch | [`TheGuyDangerous/claudes-plan`](https://github.com/TheGuyDangerous/claudes-plan) |
-| Refresh scripts + Firestore rules | [`TheGuyDangerous/claude-token-keeper-core`](https://github.com/TheGuyDangerous/claude-token-keeper-core) (private) |
-| Account storage | Firestore `claude_accounts` collection |
+| Piece | Role |
+|-------|------|
+| **Claudamangala** | Menu-bar UI — sign in, list accounts, apply / copy / refresh |
+| **Firestore** | Shared account registry (`claude_accounts`) |
+| **Refresh pipeline** | Background job that keeps OAuth tokens fresh (hosted separately; you configure it once) |
 
 ## Requirements
 
@@ -63,14 +55,14 @@ flowchart LR
 - Xcode 15+ (for local builds)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 - A Firebase project with Email/Password auth and Firestore enabled
-- Pipeline already seeded (`app_config/pipeline` + GitHub `WORKFLOW_DISPATCH_SECRET`)
+- A refresh pipeline + Firestore `app_config` already set up for your project (not part of this repo)
 
 ## Local setup
 
 ### 1. Clone and generate the Xcode project
 
 ```bash
-git clone https://github.com/TheGuyDangerous/Claudamangala.git
+git clone <repo-url>
 cd Claudamangala
 xcodegen generate
 ./scripts/generate-icons.sh
@@ -87,9 +79,9 @@ Claudamangala/GoogleService-Info.plist
 
 Use `Claudamangala/GoogleService-Info.plist.example` as a template. **Never commit the real file.**
 
-### 3. Add pipeline dispatch config
+### 3. Add pipeline config
 
-Copy the example and fill in your GitHub PAT + dispatch secret:
+Copy the example and fill in the values whoever operates the refresh pipeline gives you:
 
 ```bash
 cp Claudamangala/PipelineConfig.plist.example Claudamangala/PipelineConfig.plist
@@ -97,10 +89,11 @@ cp Claudamangala/PipelineConfig.plist.example Claudamangala/PipelineConfig.plist
 
 | Key | Description |
 |-----|-------------|
-| `githubOwner` / `githubRepo` | Public workflow repo (e.g. `TheGuyDangerous` / `claudes-plan`) |
-| `workflowFile` | `refresh-claude-tokens.yml` |
-| `dispatchToken` | Fine-grained PAT with **Actions: write** on the public repo |
-| `dispatchSecret` | Must match GitHub secret `WORKFLOW_DISPATCH_SECRET` |
+| `githubOwner` / `githubRepo` | Host for the refresh automation trigger |
+| `workflowFile` | Workflow filename on that host |
+| `defaultBranch` | Branch to target |
+| `dispatchToken` | API token allowed to start a refresh run |
+| `dispatchSecret` | Shared secret the pipeline checks on manual refresh |
 
 `PipelineConfig.plist` is gitignored and bundled into the app at build time.
 
@@ -111,13 +104,13 @@ xcodebuild -scheme Claudamangala -configuration Debug build
 open ~/Library/Developer/Xcode/DerivedData/Claudamangala-*/Build/Products/Debug/Claudamangala.app
 ```
 
-Look for the **orange Claude spark** in the menu bar — no background box, just the mark on the system bar.
+Look for the **orange Claude spark** in the menu bar.
 
-## CI — build a DMG
+## Building a DMG (optional)
 
-On tag push `v*.*.*` or manual **workflow_dispatch**, [`.github/workflows/build-dmg.yml`](.github/workflows/build-dmg.yml) builds a Release `.dmg` artifact.
+Tag push `v*.*.*` or a manual run of [`.github/workflows/build-dmg.yml`](.github/workflows/build-dmg.yml) can produce a Release `.dmg`.
 
-Set these repository secrets:
+Set these repository secrets on **this** repo:
 
 | Secret | Value |
 |--------|-------|
@@ -129,14 +122,14 @@ The DMG is **ad-hoc signed, not notarized**. First launch: right-click → **Ope
 ## Sharing with friends
 
 1. Create a Firebase Auth user for them (Email/Password).
-2. Publish Firestore rules that let authenticated users read/write `claude_accounts` (see `claude-token-keeper-core/firestore.rules`).
-3. Send them the built `.dmg` plus their login credentials.
+2. Give them Firestore access to `claude_accounts` (rules that allow authenticated read/write).
+3. Send a built `.dmg` with `GoogleService-Info.plist` and `PipelineConfig.plist` already bundled, plus their login.
 4. They add accounts from their own Keychain via the **+** button.
 
 ## Refresh flow
 
 1. User taps **Refresh** on an account row.
-2. App POSTs to GitHub `workflow_dispatch` with `account_id` + `dispatch_secret`.
+2. App sends a signed refresh request to the configured pipeline host.
 3. App polls Firestore for changes to `expiresAt`, `lastRefreshStatus`, and `lastRefreshedAt`.
 4. Spinner stops on `success` or `skipped`.
 
@@ -144,33 +137,29 @@ The DMG is **ad-hoc signed, not notarized**. First launch: right-click → **Ope
 
 ```
 Claudamangala/
-├── Assets.xcassets/            # AppIcon + MenuBarIcon (from Resources/*.svg)
-├── Resources/
-│   ├── claude-logo.svg         # Menu bar spark (transparent)
-│   └── app-icon.svg            # Dock icon (spark on dark tile)
-├── ClaudamangalaApp.swift      # MenuBarExtra + MenuBarIcon
+├── Assets.xcassets/            # AppIcon + MenuBarIcon
+├── Resources/                  # Logo SVG sources
+├── ClaudamangalaApp.swift      # MenuBarExtra entry
 ├── Views/                      # SwiftUI screens
 ├── ViewModels/                 # Auth + accounts state
 ├── Services/                   # Firebase REST, Firestore, pipeline, Keychain
-├── GoogleService-Info.plist    # gitignored — Firebase web API key
-└── PipelineConfig.plist        # gitignored — GitHub dispatch credentials
+├── GoogleService-Info.plist    # gitignored — Firebase config
+└── PipelineConfig.plist        # gitignored — refresh trigger config
 
 docs/
-├── menubar-icon.png            # Transparent Claude spark (README + reference)
-├── claude-spark.svg            # Shared spark source
-├── app-icon.png                # Exported AppIcon preview
-└── screenshots/                # README UI captures
+├── menubar-icon.png
+├── claude-spark.svg
+├── app-icon.png
+└── screenshots/
 ```
 
 ## Regenerating icons & docs assets
 
-Source SVGs live in `Claudamangala/Resources/`. Requires `brew install librsvg`.
+Requires `brew install librsvg`.
 
 ```bash
 ./scripts/generate-icons.sh
 ```
-
-This updates `Assets.xcassets` and syncs `docs/menubar-icon.png`, `docs/app-icon.png`, and `docs/claude-spark.svg`.
 
 ## Regenerating screenshots
 
@@ -183,4 +172,4 @@ Grant **Accessibility** and **Screen Recording** to Terminal when prompted.
 
 ## License
 
-MIT — use at your own risk. OAuth tokens are sensitive; only share the app with people you trust. Claude® and the Claude spark are trademarks of Anthropic; this is an unofficial private tool.
+MIT — use at your own risk. OAuth tokens are sensitive; only share the app with people you trust. Claude® and the Claude spark are trademarks of Anthropic; this is an unofficial tool.

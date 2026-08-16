@@ -68,7 +68,7 @@ final class AccountsViewModel {
 
     // MARK: - Add
 
-    /// Mirrors scripts/seed-account.mjs's field set exactly.
+    /// Writes the same field set the Firestore account schema expects.
     func addAccount(docId: String, label: String, credentials: ClaudeOAuthCredentials) async throws {
         guard let firestore else { return }
 
