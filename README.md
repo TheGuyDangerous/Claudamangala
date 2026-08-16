@@ -152,7 +152,7 @@ Claudamangala/
 
 ## Regenerating icons
 
-Source SVGs live in `Claudamangala/Resources/`. Re-rasterize after editing:
+Source SVGs live in `Claudamangala/Resources/`. Requires `brew install librsvg`. Re-rasterize after editing:
 
 ```bash
 ./scripts/generate-icons.sh
