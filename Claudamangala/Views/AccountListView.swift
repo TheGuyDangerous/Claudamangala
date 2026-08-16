@@ -4,16 +4,15 @@ private enum AccountPanel: Equatable {
     case list
     case add
     case rename(accountId: String, currentLabel: String)
+    case apply(account: ClaudeAccount)
 }
 
 struct AccountListView: View {
     @Bindable var accountsViewModel: AccountsViewModel
 
     @State private var panel: AccountPanel = .list
-    @State private var applyAlertAccount: ClaudeAccount?
-    @State private var applyErrorMessage: String?
     @State private var refreshErrorMessage: String?
-    @State private var pendingApplyCompletion: ((Bool) -> Void)?
+    @State private var lastAppliedAccountId: String?
 
     var body: some View {
         Group {
@@ -32,35 +31,21 @@ struct AccountListView: View {
                 ) {
                     panel = .list
                 }
+            case .apply(let account):
+                ApplyConfirmPanel(
+                    accountsViewModel: accountsViewModel,
+                    account: account,
+                    onFinished: { panel = .list },
+                    onSuccess: { accountId in
+                        lastAppliedAccountId = accountId
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            if lastAppliedAccountId == accountId {
+                                lastAppliedAccountId = nil
+                            }
+                        }
+                    }
+                )
             }
-        }
-        .alert(
-            "Switch to '\(applyAlertAccount?.label ?? "")'?",
-            isPresented: Binding(
-                get: { applyAlertAccount != nil },
-                set: { if !$0 { applyAlertAccount = nil } }
-            )
-        ) {
-            Button("Cancel", role: .cancel) {
-                pendingApplyCompletion?(false)
-                pendingApplyCompletion = nil
-            }
-            Button("Apply", role: .destructive) {
-                performApply()
-            }
-        } message: {
-            Text("This will replace the Claude Code session currently active on this Mac.")
-        }
-        .alert(
-            "Apply Failed",
-            isPresented: Binding(
-                get: { applyErrorMessage != nil },
-                set: { if !$0 { applyErrorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(applyErrorMessage ?? "")
         }
         .alert(
             "Refresh Failed",
@@ -103,9 +88,9 @@ struct AccountListView: View {
                     AccountRowView(
                         account: account,
                         isRefreshing: accountsViewModel.isRefreshing(accountId: account.id),
-                        onApply: { completion in
-                            applyAlertAccount = account
-                            pendingApplyCompletion = completion
+                        isJustApplied: lastAppliedAccountId == (account.id ?? account.label),
+                        onApply: {
+                            panel = .apply(account: account)
                         },
                         onRefresh: {
                             triggerRefresh(for: account)
@@ -125,19 +110,6 @@ struct AccountListView: View {
                     .foregroundStyle(.red)
             }
         }
-    }
-
-    private func performApply() {
-        guard let account = applyAlertAccount else { return }
-        applyAlertAccount = nil
-        do {
-            try accountsViewModel.applyAccount(account)
-            pendingApplyCompletion?(true)
-        } catch {
-            applyErrorMessage = error.localizedDescription
-            pendingApplyCompletion?(false)
-        }
-        pendingApplyCompletion = nil
     }
 
     private func triggerRefresh(for account: ClaudeAccount) {

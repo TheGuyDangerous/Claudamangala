@@ -4,13 +4,11 @@ import SwiftUI
 struct AccountRowView: View {
     let account: ClaudeAccount
     let isRefreshing: Bool
-    /// Calls back with `true` on success, `false` on failure, so the row can
-    /// show a transient "Applied ✓" state without the parent managing it.
-    let onApply: (@escaping (Bool) -> Void) -> Void
+    let isJustApplied: Bool
+    let onApply: () -> Void
     let onRefresh: () -> Void
     let onRename: () -> Void
 
-    @State private var justApplied = false
     @State private var justCopied = false
 
     var body: some View {
@@ -70,16 +68,9 @@ struct AccountRowView: View {
                 .help("Copy credentials JSON to clipboard")
 
                 Button {
-                    onApply { success in
-                        if success {
-                            justApplied = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                justApplied = false
-                            }
-                        }
-                    }
+                    onApply()
                 } label: {
-                    Text(justApplied ? "Applied ✓" : "Apply")
+                    Text(isJustApplied ? "Applied ✓" : "Apply")
                 }
                 .buttonStyle(.glass)
                 .disabled(isRefreshing)
