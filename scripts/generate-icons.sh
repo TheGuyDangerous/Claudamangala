@@ -36,4 +36,12 @@ render "$APP_SVG" 256  "$ASSETS/AppIcon.appiconset/icon_256.png"
 render "$APP_SVG" 512  "$ASSETS/AppIcon.appiconset/icon_512.png"
 render "$APP_SVG" 1024 "$ASSETS/AppIcon.appiconset/icon_1024.png"
 
+DOCS="$ROOT/docs"
+mkdir -p "$DOCS/screenshots"
+cp "$MENUBAR_SVG" "$DOCS/claude-spark.svg"
+cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
+cp "$ASSETS/MenuBarIcon.imageset/menubar@3x.png" "$DOCS/menubar-icon.png"
+rsvg-convert -w 1280 -h 360 "$DOCS/banner.svg" -o "$DOCS/banner.png"
+
 echo "✓ Icons generated in $ASSETS"
+echo "✓ Docs assets synced to $DOCS"

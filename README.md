@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="docs/banner.svg" alt="Claudamangala banner" width="100%">
+  <img src="docs/banner.svg" alt="Claudamangala — Claude Code account switcher for macOS" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/app-icon.png" alt="Claudamangala app icon" width="96" height="96">
+  &nbsp;&nbsp;
+  <img src="docs/menubar-icon.png" alt="Claude spark menu bar icon" width="36" height="36">
 </p>
 
 # Claudamangala
@@ -7,13 +13,25 @@
 A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored in **Firebase Firestore**. Sign in, view token expiry, switch accounts to your Mac Keychain, copy credentials, or trigger a per-account refresh via GitHub Actions.
 
 <p align="center">
-  <img src="docs/screenshots/sign-in.png" alt="Sign in" width="320">
+  <img src="docs/screenshots/sign-in.png" alt="Sign-in screen" width="300">
   &nbsp;&nbsp;
-  <img src="docs/screenshots/accounts.png" alt="Account list" width="420">
+  <img src="docs/screenshots/accounts.png" alt="Account list with refresh, copy, and apply" width="420">
 </p>
+
+## Branding
+
+| Asset | File | Used for |
+|-------|------|----------|
+| App icon | [`docs/app-icon.png`](docs/app-icon.png) | Dock, Finder, DMG, README |
+| Menu bar icon | [`docs/menubar-icon.png`](docs/menubar-icon.png) | `MenuBarExtra` status item |
+| Claude spark (SVG) | [`docs/claude-spark.svg`](docs/claude-spark.svg) | Source mark, banners |
+| README banner | [`docs/banner.svg`](docs/banner.svg) / [`docs/banner.png`](docs/banner.png) | GitHub repo header |
+
+Icons are generated from `Claudamangala/Resources/claude-logo.svg` and `app-icon.svg` via `./scripts/generate-icons.sh` (requires `brew install librsvg`).
 
 ## Features
 
+- **Claude spark branding** — official Anthropic spark in the menu bar (transparent) and on the app icon
 - **Firebase sign-in** — email/password auth via REST (no Firebase SDK keychain issues on unsigned builds)
 - **Live account list** — polls Firestore every 5 seconds for expiry and refresh status
 - **Apply** — replaces the active `claudeAiOauth` Keychain entry on this Mac
@@ -72,6 +90,7 @@ flowchart LR
 git clone https://github.com/TheGuyDangerous/Claudamangala.git
 cd Claudamangala
 xcodegen generate
+./scripts/generate-icons.sh
 open Claudamangala.xcodeproj
 ```
 
@@ -109,7 +128,7 @@ xcodebuild -scheme Claudamangala -configuration Debug build
 open ~/Library/Developer/Xcode/DerivedData/Claudamangala-*/Build/Products/Debug/Claudamangala.app
 ```
 
-The app lives in the menu bar with the **Claude spark** icon.
+Look for the **orange Claude spark** in the menu bar — no background box, just the mark on the system bar.
 
 ## CI — build a DMG
 
@@ -142,21 +161,34 @@ The DMG is **ad-hoc signed, not notarized**. First launch: right-click → **Ope
 
 ```
 Claudamangala/
-├── ClaudamangalaApp.swift      # MenuBarExtra entry
+├── Assets.xcassets/            # AppIcon + MenuBarIcon (from Resources/*.svg)
+├── Resources/
+│   ├── claude-logo.svg         # Menu bar spark (transparent)
+│   └── app-icon.svg            # Dock icon (spark on dark tile)
+├── ClaudamangalaApp.swift      # MenuBarExtra + MenuBarIcon
 ├── Views/                      # SwiftUI screens
 ├── ViewModels/                 # Auth + accounts state
 ├── Services/                   # Firebase REST, Firestore, pipeline, Keychain
 ├── GoogleService-Info.plist    # gitignored — Firebase web API key
 └── PipelineConfig.plist        # gitignored — GitHub dispatch credentials
+
+docs/
+├── banner.svg / banner.png     # README header
+├── app-icon.png                # Exported AppIcon preview
+├── menubar-icon.png            # Exported menu bar glyph
+├── claude-spark.svg            # Shared spark source
+└── screenshots/                # README UI captures
 ```
 
-## Regenerating icons
+## Regenerating icons & docs assets
 
-Source SVGs live in `Claudamangala/Resources/`. Requires `brew install librsvg`. Re-rasterize after editing:
+Source SVGs live in `Claudamangala/Resources/`. Requires `brew install librsvg`.
 
 ```bash
 ./scripts/generate-icons.sh
 ```
+
+This updates `Assets.xcassets` and syncs `docs/app-icon.png`, `docs/menubar-icon.png`, `docs/claude-spark.svg`, and `docs/banner.png`.
 
 ## Regenerating screenshots
 
@@ -169,4 +201,4 @@ Grant **Accessibility** and **Screen Recording** to Terminal when prompted.
 
 ## License
 
-MIT — use at your own risk. OAuth tokens are sensitive; only share the app with people you trust.
+MIT — use at your own risk. OAuth tokens are sensitive; only share the app with people you trust. Claude® and the Claude spark are trademarks of Anthropic; this is an unofficial private tool.
