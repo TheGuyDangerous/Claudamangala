@@ -9,7 +9,7 @@ struct MenuBarContentView: View {
             if authViewModel.isSignedIn {
                 AccountListView(accountsViewModel: accountsViewModel)
                     .padding(16)
-                    .frame(width: 400)
+                    .frame(width: 340)
 
                 if accountsViewModel.accounts.count > 1 {
                     Divider()

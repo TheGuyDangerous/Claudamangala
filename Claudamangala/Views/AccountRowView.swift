@@ -42,6 +42,8 @@ struct AccountRowView: View {
 
             liquidGlassCluster {
                 HStack(spacing: 8) {
+                    Spacer()
+
                     Button {
                         onRefresh()
                     } label: {
@@ -74,7 +76,6 @@ struct AccountRowView: View {
                     .buttonStyle(.glass)
                     .disabled(isRefreshing)
                 }
-                .frame(maxWidth: .infinity, alignment: .center)
             }
         }
         .padding(.vertical, 6)

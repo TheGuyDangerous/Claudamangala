@@ -57,7 +57,7 @@ struct ApplyConfirmPanel: View {
             }
         }
         .padding(16)
-        .frame(width: 360)
+        .frame(width: 320)
     }
 
     private func apply() {
