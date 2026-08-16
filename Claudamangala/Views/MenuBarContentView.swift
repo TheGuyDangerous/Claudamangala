@@ -11,7 +11,9 @@ struct MenuBarContentView: View {
                     .padding(16)
                     .frame(width: 400)
 
-                Divider()
+                if accountsViewModel.accounts.count > 1 {
+                    Divider()
+                }
 
                 HStack {
                     Button("Sign Out") { authViewModel.signOut() }

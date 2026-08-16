@@ -84,7 +84,8 @@ struct AccountListView: View {
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
             } else {
-                ForEach(accountsViewModel.accounts) { account in
+                ForEach(accountsViewModel.accounts.indices, id: \.self) { index in
+                    let account = accountsViewModel.accounts[index]
                     AccountRowView(
                         account: account,
                         isRefreshing: accountsViewModel.isRefreshing(accountId: account.id),
@@ -100,7 +101,9 @@ struct AccountListView: View {
                             panel = .rename(accountId: id, currentLabel: account.label)
                         }
                     )
-                    Divider()
+                    if index < accountsViewModel.accounts.count - 1 {
+                        Divider()
+                    }
                 }
             }
 
