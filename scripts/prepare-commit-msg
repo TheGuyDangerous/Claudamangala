@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Strips Cursor co-author trailers before a commit is finalized.
+# Install: ln -sf ../../scripts/prepare-commit-msg .git/hooks/prepare-commit-msg
+
+msg_file="$1"
+[ -f "$msg_file" ] || exit 0
+sed -i '' '/^Co-authored-by: Cursor <cursoragent@cursor.com>$/d' "$msg_file" 2>/dev/null \
+  || sed -i '/^Co-authored-by: Cursor <cursoragent@cursor.com>$/d' "$msg_file"
