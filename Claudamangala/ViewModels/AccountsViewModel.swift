@@ -52,8 +52,8 @@ final class AccountsViewModel {
             accounts = try await firestore.fetchAccounts()
             permissionDenied = false
             lastActionError = nil
-            if menuIsOpen, usageByAccountId.isEmpty, !accounts.isEmpty {
-                refreshUsageForAllAccounts()
+            if menuIsOpen {
+                hydrateUsageFromAccounts()
             }
         } catch let error as FirestoreRESTError {
             if case .permissionDenied = error {
@@ -117,8 +117,9 @@ final class AccountsViewModel {
     }
 
     func usage(for account: ClaudeAccount) -> ClaudeAccountUsage {
-        guard let id = account.id else { return .unavailable }
-        return usageByAccountId[id] ?? .unavailable
+        guard let id = account.id else { return ClaudeAccountUsage() }
+        if let cached = usageByAccountId[id] { return cached }
+        return ClaudeAccountUsage.fromStored(account: account)
     }
 
     func isRefreshingUsage(accountId: String?) -> Bool {
@@ -128,7 +129,10 @@ final class AccountsViewModel {
 
     func menuDidOpen() {
         menuIsOpen = true
-        refreshUsageForAllAccounts()
+        hydrateUsageFromAccounts()
+        if UsagePreferences.fetchOnMenuOpen {
+            refreshUsageFromAPIForAllAccounts()
+        }
     }
 
     func menuDidClose() {
@@ -140,52 +144,77 @@ final class AccountsViewModel {
     }
 
     func refreshUsage(for account: ClaudeAccount) {
-        guard let id = account.id else { return }
+        guard let id = account.id, let firestore else { return }
         usageRefreshTask?.cancel()
 
         Task {
             refreshingUsageAccountIds.insert(id)
             defer { refreshingUsageAccountIds.remove(id) }
+
+            let fallback = usage(for: account)
             usageByAccountId[id] = .loading
 
             do {
                 let usage = try await ClaudeUsageService.fetch(accessToken: account.accessToken)
+                try await firestore.updateUsageSnapshot(
+                    accountId: id,
+                    fiveHourAvailable: usage.fiveHourAvailable,
+                    weeklyAvailable: usage.weeklyAvailable
+                )
                 usageByAccountId[id] = usage
+                await refreshAccounts()
             } catch {
-                usageByAccountId[id] = .unavailable
+                if fallback.hasData {
+                    usageByAccountId[id] = fallback
+                } else {
+                    usageByAccountId[id] = ClaudeAccountUsage(
+                        fiveHourAvailable: account.fiveHourAvailable,
+                        weeklyAvailable: account.weeklyAvailable,
+                        hasError: true,
+                        isStored: account.hasStoredUsage
+                    )
+                }
             }
         }
     }
 
-    func refreshUsageForAllAccounts() {
+    private func refreshUsageFromAPIForAllAccounts() {
         usageRefreshTask?.cancel()
         let snapshot = accounts
         guard !snapshot.isEmpty else { return }
 
         usageRefreshTask = Task {
-            await fetchUsage(for: snapshot)
+            for account in snapshot {
+                if Task.isCancelled { return }
+                guard let id = account.id else { continue }
+                refreshingUsageAccountIds.insert(id)
+                let fallback = usage(for: account)
+                usageByAccountId[id] = .loading
+
+                do {
+                    let usage = try await ClaudeUsageService.fetch(accessToken: account.accessToken)
+                    try await firestore?.updateUsageSnapshot(
+                        accountId: id,
+                        fiveHourAvailable: usage.fiveHourAvailable,
+                        weeklyAvailable: usage.weeklyAvailable
+                    )
+                    usageByAccountId[id] = usage
+                } catch {
+                    usageByAccountId[id] = fallback.hasData ? fallback : ClaudeAccountUsage.fromStored(account: account)
+                }
+
+                refreshingUsageAccountIds.remove(id)
+            }
+            await refreshAccounts()
         }
     }
 
-    private func fetchUsage(for accounts: [ClaudeAccount]) async {
-        await withTaskGroup(of: (String, ClaudeAccountUsage).self) { group in
-            for account in accounts {
-                guard let id = account.id else { continue }
-                usageByAccountId[id] = .loading
-                group.addTask {
-                    do {
-                        let usage = try await ClaudeUsageService.fetch(accessToken: account.accessToken)
-                        return (id, usage)
-                    } catch {
-                        return (id, .unavailable)
-                    }
-                }
-            }
-
-            for await (id, usage) in group {
-                if Task.isCancelled { return }
-                usageByAccountId[id] = usage
-            }
+    private func hydrateUsageFromAccounts() {
+        for account in accounts {
+            guard let id = account.id else { continue }
+            if refreshingUsageAccountIds.contains(id) { continue }
+            if usageByAccountId[id]?.isLoading == true { continue }
+            usageByAccountId[id] = ClaudeAccountUsage.fromStored(account: account)
         }
     }
 }

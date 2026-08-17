@@ -17,6 +17,14 @@ struct ClaudeAccount: Codable, Identifiable, Equatable {
     var createdAt: Date?
     var updatedAt: Date?
 
+    var fiveHourAvailable: Double?
+    var weeklyAvailable: Double?
+    var usageUpdatedAt: Date?
+
+    var hasStoredUsage: Bool {
+        fiveHourAvailable != nil || weeklyAvailable != nil
+    }
+
     var expiresInDescription: String {
         let remainingMs = expiresAt - Date().timeIntervalSince1970 * 1000
         if remainingMs <= 0 { return "expired" }

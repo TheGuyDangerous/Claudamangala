@@ -2,6 +2,7 @@ import SwiftUI
 
 private enum AccountPanel: Equatable {
     case list
+    case preferences
     case add
     case rename(accountId: String, currentLabel: String)
     case apply(account: ClaudeAccount)
@@ -19,6 +20,10 @@ struct AccountListView: View {
             switch panel {
             case .list:
                 accountList
+            case .preferences:
+                PreferencesPanel {
+                    panel = .list
+                }
             case .add:
                 AddAccountSheet(accountsViewModel: accountsViewModel) {
                     panel = .list
@@ -66,6 +71,13 @@ struct AccountListView: View {
                 Text("Claudamangala")
                     .font(.headline)
                 Spacer()
+                Button {
+                    panel = .preferences
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .buttonStyle(.plain)
+                .help("Preferences")
                 Button {
                     panel = .add
                 } label: {

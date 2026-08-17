@@ -39,6 +39,7 @@ struct AccountRowView: View {
                 metricBlock(title: "Session", value: account.expiresInDescription)
                 metricBlock(title: "Refresh", value: account.lastRefreshStatus)
             }
+            .padding(.top, 6)
 
             if usage.isLoading {
                 ProgressView().controlSize(.small)
@@ -48,6 +49,11 @@ struct AccountRowView: View {
                     Text("Limits")
                         .font(.caption2.weight(.medium))
                         .foregroundStyle(.secondary)
+                    if usage.isStored {
+                        Text("saved")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
                     Spacer()
                     Button(action: onRefreshUsage) {
                         if isRefreshingUsage {

@@ -131,6 +131,35 @@ struct FirestoreRESTService {
         )
     }
 
+    func updateUsageSnapshot(
+        accountId: String,
+        fiveHourAvailable: Double?,
+        weeklyAvailable: Double?
+    ) async throws {
+        let now = FirestoreValue.timestamp()
+        var fields: [String: Any] = [
+            "usageUpdatedAt": now,
+            "updatedAt": now,
+        ]
+        var fieldPaths = ["usageUpdatedAt", "updatedAt"]
+
+        if let fiveHourAvailable {
+            fields["fiveHourAvailable"] = FirestoreValue.number(fiveHourAvailable)
+            fieldPaths.append("fiveHourAvailable")
+        }
+        if let weeklyAvailable {
+            fields["weeklyAvailable"] = FirestoreValue.number(weeklyAvailable)
+            fieldPaths.append("weeklyAvailable")
+        }
+
+        let body: [String: Any] = ["fields": fields]
+        try await patch(
+            path: "claude_accounts/\(accountId)",
+            body: body,
+            fieldPaths: fieldPaths
+        )
+    }
+
     func createAccount(
         docId: String,
         label: String,
@@ -209,7 +238,10 @@ struct FirestoreRESTService {
             consecutiveFailures: Int(FirestoreValue.numberValue(fields["consecutiveFailures"]) ?? 0),
             lastRefreshedAt: FirestoreValue.dateValue(fields["lastRefreshedAt"]),
             createdAt: FirestoreValue.dateValue(fields["createdAt"]),
-            updatedAt: FirestoreValue.dateValue(fields["updatedAt"])
+            updatedAt: FirestoreValue.dateValue(fields["updatedAt"]),
+            fiveHourAvailable: FirestoreValue.numberValue(fields["fiveHourAvailable"]),
+            weeklyAvailable: FirestoreValue.numberValue(fields["weeklyAvailable"]),
+            usageUpdatedAt: FirestoreValue.dateValue(fields["usageUpdatedAt"])
         )
     }
 
