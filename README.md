@@ -115,7 +115,17 @@ Set these repository secrets on **this** repo:
 | `GOOGLE_SERVICE_INFO_PLIST_BASE64` | `base64 -i Claudamangala/GoogleService-Info.plist` |
 | `PIPELINE_CONFIG_PLIST_BASE64` | `base64 -i Claudamangala/PipelineConfig.plist` |
 
-The DMG is **ad-hoc signed, not notarized**. First launch: right-click → **Open**.
+The DMG is **ad-hoc signed, not notarized**. macOS may block the first launch.
+
+**Option A — right-click:** Applications → **Claudamangala** → right-click → **Open** → confirm **Open**.
+
+**Option B — System Settings:** If you only see “Move to Bin”, open **System Settings → Privacy & Security** and click **Open Anyway**:
+
+<p align="center">
+  <img src="docs/screenshots/Claudamangala-block_2026-08-17_06-38-04.png" alt="System Settings → Privacy & Security → Open Anyway for Claudamangala" width="640">
+</p>
+
+You only need to do this once per Mac.
 
 ## Sharing with friends
 
@@ -149,7 +159,8 @@ docs/
 ├── claude-spark.svg
 ├── app-icon.png
 └── screenshots/
-    └── app.png
+    ├── app.png
+    └── Claudamangala-block_2026-08-17_06-38-04.png
 ```
 
 ## Regenerating icons & docs assets
