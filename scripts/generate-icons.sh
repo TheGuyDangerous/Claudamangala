@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CLOUD_SVG="$ROOT/Claudamangala/Resources/claude-logo.svg"
-MENUBAR_SVG="$CLOUD_SVG"
+MENUBAR_SVG="$ROOT/Claudamangala/Resources/menubar-logo.svg"
 APP_SVG="$ROOT/Claudamangala/Resources/app-icon.svg"
 ICON_PACKAGE="$ROOT/Claudamangala/Claudamangala.icon"
 ASSETS="$ROOT/Claudamangala/Assets.xcassets"

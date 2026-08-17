@@ -10,7 +10,7 @@ struct ClaudamangalaApp: App {
             MenuBarContentView(authViewModel: authViewModel, accountsViewModel: accountsViewModel)
         } label: {
             Image("MenuBarIcon")
-                .renderingMode(.original)
+                .renderingMode(.template)
         }
         .menuBarExtraStyle(.window)
     }
