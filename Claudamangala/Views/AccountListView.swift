@@ -76,7 +76,13 @@ struct AccountListView: View {
 
     private var accountList: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(spacing: 8) {
+                Image("MenuBarIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(.primary)
                 Text("Claudamangala")
                     .font(.headline)
                 Spacer()
