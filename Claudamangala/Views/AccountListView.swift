@@ -90,10 +90,14 @@ struct AccountListView: View {
                 }
             }
 
-            ScrollView(.vertical, showsIndicators: true) {
+            if accountsViewModel.accounts.isEmpty {
                 accountListBody
+            } else {
+                ScrollView(.vertical, showsIndicators: true) {
+                    accountListBody
+                }
+                .frame(height: AccountListLayout.scrollHeight)
             }
-            .frame(height: AccountListLayout.scrollHeight)
 
             if let error = accountsViewModel.lastActionError {
                 Text(error)
@@ -122,7 +126,6 @@ struct AccountListView: View {
                 Text("No accounts yet — click + to add one.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: AccountListLayout.scrollHeight - 16, alignment: .topLeading)
                     .padding(.vertical, 8)
             } else {
                 ForEach(accountsViewModel.accounts, id: \.listId) { account in
