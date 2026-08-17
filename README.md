@@ -35,7 +35,7 @@ flowchart LR
   end
 
   subgraph cloud["Cloud"]
-    FS[(Firestore\nclaude_accounts)]
+    FS[(Firestore\nusers/*/claude_accounts)]
     Pipe[Token refresh pipeline]
   end
 
@@ -47,7 +47,7 @@ flowchart LR
 | Piece | Role |
 |-------|------|
 | **Claudamangala** | Menu-bar UI — sign in, list accounts, apply / copy / refresh |
-| **Firestore** | Per-user account registry (`claude_accounts`, `ownerUid`) |
+| **Firestore** | Per-user nested accounts (`users/{uid}/claude_accounts`) |
 | **Refresh pipeline** | Background job that keeps OAuth tokens fresh (hosted separately; you configure it once) |
 
 ## Requirements
@@ -153,7 +153,7 @@ You only need to do this once per Mac.
 3. Send a built `.dmg` with `GoogleService-Info.plist` and `PipelineConfig.plist` already bundled, plus their login.
 4. They add accounts from their own Keychain via the **+** button — new documents are tagged with their `ownerUid` automatically.
 
-Each user has a private `claude_accounts` slice. The GitHub Actions refresh job still refreshes all accounts (Admin SDK bypasses rules).
+Each user has `users/{uid}/claude_accounts/*`. The GitHub Actions refresh job still refreshes all active accounts (Admin SDK bypasses rules).
 
 ### Migrating existing documents
 

@@ -23,7 +23,7 @@ final class AccountsViewModel {
 
     func startListening(session: FirebaseSession) {
         firestore = FirestoreRESTService(session: session, ownerUid: session.userId)
-        pipeline = PipelineTriggerService(session: session, firestore: firestore!)
+        pipeline = PipelineTriggerService(session: session, firestore: firestore!, ownerUid: session.userId)
         Task {
             try? await firestore?.ensureUserProfile(email: session.email)
             await refreshCloudRefreshAccess()

@@ -35,6 +35,7 @@ enum PipelineTriggerError: LocalizedError {
 struct PipelineTriggerService {
     let session: FirebaseSession
     let firestore: FirestoreRESTService
+    let ownerUid: String
 
     func triggerRefresh(accountId: String) async throws {
         let config = try await PipelineConfigLoader.load(firestore: firestore)
@@ -57,6 +58,7 @@ struct PipelineTriggerService {
             "ref": config.defaultBranch,
             "inputs": [
                 "account_id": accountId,
+                "owner_uid": ownerUid,
                 "dispatch_secret": config.dispatchSecret,
             ],
         ])

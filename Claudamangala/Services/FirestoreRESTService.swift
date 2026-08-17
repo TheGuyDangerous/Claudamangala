@@ -25,6 +25,14 @@ struct FirestoreRESTService {
         "https://firestore.googleapis.com/v1/projects/\(FirebaseConfig.projectId)/databases/(default)/documents"
     }
 
+    private var accountsCollectionPath: String {
+        "users/\(ownerUid)/claude_accounts"
+    }
+
+    private func accountPath(_ accountId: String) -> String {
+        "\(accountsCollectionPath)/\(accountId)"
+    }
+
     /// Ensures `users/{ownerUid}` exists with `ownerUid` + email (idempotent on every sign-in).
     func ensureUserProfile(email: String) async throws {
         guard !ownerUid.isEmpty else { return }
@@ -70,7 +78,7 @@ struct FirestoreRESTService {
     }
 
     func fetchAccounts() async throws -> FirestoreAccountsFetchResult {
-        let url = URL(string: "\(baseURL)/claude_accounts")!
+        let url = URL(string: "\(baseURL)/\(accountsCollectionPath)")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
 
@@ -94,7 +102,7 @@ struct FirestoreRESTService {
     }
 
     func fetchAccount(id: String) async throws -> ClaudeAccount {
-        let url = URL(string: "\(baseURL)/claude_accounts/\(id)")!
+        let url = URL(string: "\(baseURL)/\(accountPath(id))")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
 
@@ -109,7 +117,7 @@ struct FirestoreRESTService {
     }
 
     func fetchRefreshSnapshot(accountId: String) async throws -> AccountRefreshSnapshot {
-        let url = URL(string: "\(baseURL)/claude_accounts/\(accountId)")!
+        let url = URL(string: "\(baseURL)/\(accountPath(accountId))")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
 
@@ -218,7 +226,7 @@ struct FirestoreRESTService {
     }
 
     func documentExists(id: String) async throws -> Bool {
-        let url = URL(string: "\(baseURL)/claude_accounts/\(id)")!
+        let url = URL(string: "\(baseURL)/\(accountPath(id))")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
 
@@ -239,7 +247,7 @@ struct FirestoreRESTService {
             ],
         ]
         try await patch(
-            path: "claude_accounts/\(accountId)",
+            path: accountPath(accountId),
             body: body,
             fieldPaths: ["label", "updatedAt"]
         )
@@ -265,7 +273,7 @@ struct FirestoreRESTService {
             ],
         ]
         try await patch(
-            path: "claude_accounts/\(accountId)",
+            path: accountPath(accountId),
             body: body,
             fieldPaths: [
                 "accessToken",
@@ -295,7 +303,7 @@ struct FirestoreRESTService {
             ],
         ]
         try await patch(
-            path: "claude_accounts/\(accountId)",
+            path: accountPath(accountId),
             body: body,
             fieldPaths: [
                 "lastRefreshStatus",
@@ -329,7 +337,7 @@ struct FirestoreRESTService {
 
         let body: [String: Any] = ["fields": fields]
         try await patch(
-            path: "claude_accounts/\(accountId)",
+            path: accountPath(accountId),
             body: body,
             fieldPaths: fieldPaths
         )
@@ -363,7 +371,7 @@ struct FirestoreRESTService {
             ],
         ]
 
-        let url = URL(string: "\(baseURL)/claude_accounts?documentId=\(docId)")!
+        let url = URL(string: "\(baseURL)/\(accountsCollectionPath)?documentId=\(docId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
