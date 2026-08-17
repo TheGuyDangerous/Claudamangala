@@ -3,10 +3,15 @@ import SwiftUI
 struct PreferencesPanel: View {
     @AppStorage(UsagePreferences.fetchOnMenuOpenKey) private var fetchOnMenuOpen = false
     @AppStorage(RefreshPreferences.oauthRefreshModeKey) private var oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
+    let userEmail: String?
     let onFinished: () -> Void
 
+    private var canUseCloudRefresh: Bool {
+        RefreshPreferences.canUseCloudRefresh(email: userEmail)
+    }
+
     private var oauthRefreshMode: OAuthRefreshMode {
-        OAuthRefreshMode(rawValue: oauthRefreshModeRaw) ?? .local
+        RefreshPreferences.oauthRefreshMode(for: userEmail)
     }
 
     var body: some View {
@@ -16,27 +21,34 @@ struct PreferencesPanel: View {
             Text("Token refresh")
                 .font(.subheadline.weight(.semibold))
 
-            Text("Choose how Refresh updates OAuth tokens in Firebase.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            if canUseCloudRefresh {
+                Text("Choose how Refresh updates OAuth tokens in Firebase.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: 10) {
-                preferenceOption(
-                    title: "Local refresh",
-                    subtitle: "Refresh tokens on this Mac and write straight to Firebase. Usually finishes in a few seconds.",
-                    isSelected: oauthRefreshMode == .local
-                ) {
-                    oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
-                }
+                VStack(alignment: .leading, spacing: 10) {
+                    preferenceOption(
+                        title: "Local refresh",
+                        subtitle: "Refresh tokens on this Mac and write straight to Firebase. Usually finishes in a few seconds.",
+                        isSelected: oauthRefreshMode == .local
+                    ) {
+                        oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
+                    }
 
-                preferenceOption(
-                    title: "Cloud refresh",
-                    subtitle: "Trigger the GitHub Actions pipeline and wait for it to update Firebase. Slower, but uses the same path as scheduled refreshes.",
-                    isSelected: oauthRefreshMode == .cloud
-                ) {
-                    oauthRefreshModeRaw = OAuthRefreshMode.cloud.rawValue
+                    preferenceOption(
+                        title: "Cloud refresh",
+                        subtitle: "Trigger the GitHub Actions pipeline and wait for it to update Firebase. Slower, but uses the same path as scheduled refreshes.",
+                        isSelected: oauthRefreshMode == .cloud
+                    ) {
+                        oauthRefreshModeRaw = OAuthRefreshMode.cloud.rawValue
+                    }
                 }
+            } else {
+                Text("OAuth tokens refresh locally on this Mac and save straight to Firebase.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Text("Usage limits")
@@ -69,6 +81,11 @@ struct PreferencesPanel: View {
         }
         .padding(16)
         .frame(width: 340)
+        .onAppear {
+            if !canUseCloudRefresh, oauthRefreshModeRaw == OAuthRefreshMode.cloud.rawValue {
+                oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
+            }
+        }
     }
 
     private func preferenceOption(

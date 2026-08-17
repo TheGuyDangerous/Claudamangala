@@ -43,6 +43,22 @@ subprocess.run([
 PY
 fi
 
+BACKDROP="$ROOT/docs/screenshot-backdrop.png"
+SAVED_WALLPAPER=""
+
+restore_wallpaper() {
+  if [[ -n "$SAVED_WALLPAPER" && -f "$SAVED_WALLPAPER" ]]; then
+    osascript -e "tell application \"Finder\" to set desktop picture to POSIX file \"$SAVED_WALLPAPER\"" >/dev/null 2>&1 || true
+  fi
+}
+
+if [[ -f "$BACKDROP" ]]; then
+  SAVED_WALLPAPER="$(osascript -e 'tell application "Finder" to get POSIX path of (desktop picture as alias)' 2>/dev/null || true)"
+  osascript -e "tell application \"Finder\" to set desktop picture to POSIX file \"$BACKDROP\"" >/dev/null 2>&1 || true
+  sleep 0.5
+  trap restore_wallpaper EXIT
+fi
+
 osascript <<'APPLESCRIPT'
 tell application "System Events"
   repeat with p in (every application process whose visible is true)
@@ -70,7 +86,7 @@ tell application "System Events"
       click first menu bar item of menu bar 2
       delay 0.8
     end if
-    delay 1.5
+    delay 3
     set w to first window
     set p to position of w
     set s to size of w

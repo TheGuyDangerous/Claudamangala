@@ -16,13 +16,15 @@ struct MenuBarContentView: View {
                 .padding(24)
                 .frame(width: 300)
             } else if authViewModel.isSignedIn {
-                AccountListView(accountsViewModel: accountsViewModel)
+                AccountListView(
+                    accountsViewModel: accountsViewModel,
+                    userEmail: authViewModel.session?.email
+                )
                     .padding(16)
                     .frame(width: 340)
 
-                if accountsViewModel.accounts.count > 1 {
-                    Divider()
-                }
+                MinimalDivider()
+                    .padding(.top, 2)
 
                 HStack {
                     Button("Sign Out") { authViewModel.signOut() }
@@ -33,7 +35,9 @@ struct MenuBarContentView: View {
                         .buttonStyle(.plain)
                         .font(.caption)
                 }
-                .padding(12)
+                .padding(.horizontal, 12)
+                .padding(.top, 4)
+                .padding(.bottom, 12)
             } else {
                 SignInView(authViewModel: authViewModel)
             }

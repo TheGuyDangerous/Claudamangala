@@ -11,6 +11,7 @@ final class AccountsViewModel {
 
     private var firestore: FirestoreRESTService?
     private var pipeline: PipelineTriggerService?
+    private var signedInEmail: String?
     var refreshingAccountIds: Set<String> = []
     var refreshingUsageAccountIds: Set<String> = []
     var usageByAccountId: [String: ClaudeAccountUsage] = [:]
@@ -20,6 +21,7 @@ final class AccountsViewModel {
     private var menuIsOpen = false
 
     func startListening(session: FirebaseSession) {
+        signedInEmail = session.email
         if firestore == nil {
             firestore = FirestoreRESTService(session: session)
             pipeline = PipelineTriggerService(session: session, firestore: firestore!)
@@ -36,6 +38,7 @@ final class AccountsViewModel {
         usageRefreshTask = nil
         firestore = nil
         pipeline = nil
+        signedInEmail = nil
         refreshingAccountIds = []
         refreshingUsageAccountIds = []
         accounts = []
@@ -96,7 +99,7 @@ final class AccountsViewModel {
     }
 
     func triggerRefresh(accountId: String?) async throws {
-        switch RefreshPreferences.oauthRefreshMode {
+        switch RefreshPreferences.oauthRefreshMode(for: signedInEmail) {
         case .cloud:
             try await triggerPipelineRefresh(accountId: accountId)
         case .local:

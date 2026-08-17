@@ -17,3 +17,14 @@ extension View {
         }
     }
 }
+
+struct MinimalDivider: View {
+    var width: CGFloat = 80
+
+    var body: some View {
+        Capsule()
+            .fill(Color.primary.opacity(0.14))
+            .frame(width: width, height: 0.5)
+            .frame(maxWidth: .infinity)
+    }
+}

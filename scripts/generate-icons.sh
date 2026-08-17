@@ -38,7 +38,10 @@ DOCS="$ROOT/docs"
 mkdir -p "$DOCS/screenshots"
 cp "$CLOUD_SVG" "$DOCS/claude-spark.svg"
 cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
-render "$MENUBAR_SVG" 144 "$DOCS/menubar-icon.png"
+README_MENUBAR_SVG="$(mktemp)"
+sed 's/fill="#000000"/fill="#FFFFFF"/' "$MENUBAR_SVG" > "$README_MENUBAR_SVG"
+render "$README_MENUBAR_SVG" 144 "$DOCS/menubar-icon.png"
+rm -f "$README_MENUBAR_SVG"
 
 if ICTOOL="$(dirname "$(xcode-select -p)")/Applications/Icon Composer.app/Contents/Executables/ictool" && [ -x "$ICTOOL" ]; then
   "$ICTOOL" "$ICON_PACKAGE" --export-image --output-file /tmp/claudamangala-icon-check.png \

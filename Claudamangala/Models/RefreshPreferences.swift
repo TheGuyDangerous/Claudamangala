@@ -16,6 +16,22 @@ enum OAuthRefreshMode: String, CaseIterable {
 
 enum RefreshPreferences {
     static let oauthRefreshModeKey = "oauthRefreshMode"
+    private static let cloudRefreshAllowlistedEmails: Set<String> = [
+        "owner@example.com",
+    ]
+
+    static func canUseCloudRefresh(email: String?) -> Bool {
+        guard let email else { return false }
+        return cloudRefreshAllowlistedEmails.contains(email.lowercased())
+    }
+
+    static func oauthRefreshMode(for email: String?) -> OAuthRefreshMode {
+        let stored = oauthRefreshMode
+        if stored == .cloud, !canUseCloudRefresh(email: email) {
+            return .local
+        }
+        return stored
+    }
 
     static var oauthRefreshMode: OAuthRefreshMode {
         get {
