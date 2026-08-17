@@ -24,8 +24,8 @@ targets:
       properties:
         CFBundleName: Claudamangala
         CFBundleDisplayName: Claudamangala
-        CFBundleShortVersionString: "1.0.2"
-        CFBundleVersion: "1.0.2"
+        CFBundleShortVersionString: "1.0.3"
+        CFBundleVersion: "1.0.3"
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: ""

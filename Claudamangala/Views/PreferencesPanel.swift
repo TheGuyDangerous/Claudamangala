@@ -179,7 +179,7 @@ struct PreferencesPanel: View {
         subtitle: String,
         isOn: Binding<Bool>
     ) -> some View {
-        Toggle(isOn: isOn) {
+        HStack(alignment: .top, spacing: 10) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.body.weight(.medium))
@@ -187,9 +187,18 @@ struct PreferencesPanel: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+
+            Spacer(minLength: 8)
+
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .scaleEffect(0.88)
+                .frame(width: 32, height: 18)
         }
-        .toggleStyle(.switch)
         .padding(10)
         .background {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
