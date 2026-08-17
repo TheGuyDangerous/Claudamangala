@@ -2,7 +2,6 @@ import AppKit
 import SwiftUI
 
 struct AccountRowView: View {
-    let style: AccountUIStyle
     let account: ClaudeAccount
     let usage: ClaudeAccountUsage
     let isRefreshing: Bool
@@ -14,20 +13,79 @@ struct AccountRowView: View {
     @State private var justCopied = false
 
     var body: some View {
-        AccountRowVariants.row(
-            style: style,
-            context: AccountRowContext(
-                account: account,
-                usage: usage,
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(account.isExpiringSoon ? Color.orange : Color.green)
+                    .frame(width: 7, height: 7)
+
+                Text(account.label)
+                    .font(.body.weight(.semibold))
+                    .lineLimit(1)
+
+                Spacer(minLength: 4)
+
+                Button(action: onRename) {
+                    Image(systemName: "pencil")
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            HStack(spacing: 12) {
+                metricBlock(title: "Session", value: account.expiresInDescription)
+                metricBlock(title: "Refresh", value: account.lastRefreshStatus)
+            }
+
+            if usage.isLoading {
+                ProgressView().controlSize(.small)
+                    .frame(maxWidth: .infinity)
+            } else {
+                UsageMeterBar(
+                    label: "5-hour window",
+                    value: usage.fiveHourAvailable,
+                    level: usage.availabilityColor(for: usage.fiveHourAvailable)
+                )
+                UsageMeterBar(
+                    label: "Weekly window",
+                    value: usage.weeklyAvailable,
+                    level: usage.availabilityColor(for: usage.weeklyAvailable)
+                )
+            }
+
+            AccountActionButtons(
                 isRefreshing: isRefreshing,
                 isJustApplied: isJustApplied,
-                onApply: onApply,
+                justCopied: justCopied,
                 onRefresh: onRefresh,
-                onRename: onRename,
                 onCopy: copyCredentials,
-                justCopied: justCopied
+                onApply: onApply
             )
-        )
+        }
+        .padding(12)
+        .background {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [.primary.opacity(0.07), .primary.opacity(0.02)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func metricBlock(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.caption.weight(.medium))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func copyCredentials() {
