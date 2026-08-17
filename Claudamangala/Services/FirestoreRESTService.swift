@@ -382,9 +382,28 @@ private enum FirestoreValue {
 
     static func numberValue(_ field: Any?) -> Double? {
         guard let dict = field as? [String: Any] else { return nil }
-        if let intString = dict["integerValue"] as? String { return Double(intString) }
-        if let doubleString = dict["doubleValue"] as? String { return Double(doubleString) }
+        if let integer = dict["integerValue"] {
+            return numericPrimitive(integer)
+        }
+        if let double = dict["doubleValue"] {
+            return numericPrimitive(double)
+        }
         return nil
+    }
+
+    private static func numericPrimitive(_ value: Any) -> Double? {
+        switch value {
+        case let number as Double:
+            return number
+        case let number as Int:
+            return Double(number)
+        case let number as NSNumber:
+            return number.doubleValue
+        case let string as String:
+            return Double(string)
+        default:
+            return nil
+        }
     }
 
     static func stringArrayValue(_ field: Any?) -> [String]? {
