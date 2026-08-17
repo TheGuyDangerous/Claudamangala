@@ -24,7 +24,10 @@ final class AccountsViewModel {
     func startListening(session: FirebaseSession) {
         firestore = FirestoreRESTService(session: session, ownerUid: session.userId)
         pipeline = PipelineTriggerService(session: session, firestore: firestore!)
-        Task { await refreshCloudRefreshAccess() }
+        Task {
+            try? await firestore?.ensureUserProfile(email: session.email)
+            await refreshCloudRefreshAccess()
+        }
         if menuIsOpen {
             scheduleMenuFetch()
         }

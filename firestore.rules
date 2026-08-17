@@ -3,6 +3,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Per-user profile — created automatically on first sign-in.
+    match /users/{userId} {
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.ownerUid == request.auth.uid;
+      allow read, update: if request.auth != null
+                          && request.auth.uid == userId;
+    }
+
     // Per-user Claude account registry — each document is owned by one Firebase user.
     // GitHub Actions uses the Admin SDK and bypasses these rules.
     match /claude_accounts/{accountId} {

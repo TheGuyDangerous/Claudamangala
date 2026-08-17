@@ -25,6 +25,50 @@ struct FirestoreRESTService {
         "https://firestore.googleapis.com/v1/projects/\(FirebaseConfig.projectId)/databases/(default)/documents"
     }
 
+    /// Ensures `users/{ownerUid}` exists with `ownerUid` + email (idempotent on every sign-in).
+    func ensureUserProfile(email: String) async throws {
+        guard !ownerUid.isEmpty else { return }
+
+        let path = "users/\(ownerUid)"
+        let url = URL(string: "\(baseURL)/\(path)")!
+        var getRequest = URLRequest(url: url)
+        getRequest.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
+
+        let (_, response) = try await URLSession.shared.data(for: getRequest)
+        guard let http = response as? HTTPURLResponse else { throw FirestoreRESTError.network }
+
+        let now = FirestoreValue.timestamp()
+
+        switch http.statusCode {
+        case 200:
+            try await patch(
+                path: path,
+                body: ["fields": ["updatedAt": now]],
+                fieldPaths: ["updatedAt"]
+            )
+        case 404:
+            let body: [String: Any] = [
+                "fields": [
+                    "ownerUid": FirestoreValue.string(ownerUid),
+                    "email": FirestoreValue.string(email),
+                    "createdAt": now,
+                    "updatedAt": now,
+                ],
+            ]
+            let createURL = URL(string: "\(baseURL)/users?documentId=\(ownerUid)")!
+            var createRequest = URLRequest(url: createURL)
+            createRequest.httpMethod = "POST"
+            createRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            createRequest.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
+            createRequest.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+            let (data, createResponse) = try await URLSession.shared.data(for: createRequest)
+            try throwIfHTTPError(data: data, response: createResponse)
+        default:
+            break
+        }
+    }
+
     func fetchAccounts() async throws -> FirestoreAccountsFetchResult {
         let url = URL(string: "\(baseURL)/claude_accounts")!
         var request = URLRequest(url: url)
