@@ -1,0 +1,45 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "linear-gradient": [
+          "extended-srgb:0.16500,0.09000,0.25500,1.00000",
+          "extended-srgb:0.07000,0.04500,0.12500,1.00000"
+        ]
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "linear-gradient": [
+          "extended-srgb:0.20000,0.11000,0.30000,1.00000",
+          "extended-srgb:0.08000,0.05000,0.14000,1.00000"
+        ]
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "Cloud Spark",
+      "layers": [
+        {
+          "name": "Spark",
+          "image-name": "cloud-spark.svg",
+          "glass": true
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.32
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": true,
+        "value": 0.18
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": ["macOS"]
+  }
+}

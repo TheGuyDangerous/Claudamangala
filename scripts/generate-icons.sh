@@ -2,8 +2,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MENUBAR_SVG="$ROOT/Claudamangala/Resources/claude-logo.svg"
+CLOUD_SVG="$ROOT/Claudamangala/Resources/claude-logo.svg"
+MENUBAR_SVG="$CLOUD_SVG"
 APP_SVG="$ROOT/Claudamangala/Resources/app-icon.svg"
+ICON_PACKAGE="$ROOT/Claudamangala/Claudamangala.icon"
 ASSETS="$ROOT/Claudamangala/Assets.xcassets"
 
 if ! command -v rsvg-convert >/dev/null 2>&1; then
@@ -37,6 +39,14 @@ mkdir -p "$DOCS/screenshots"
 cp "$MENUBAR_SVG" "$DOCS/claude-spark.svg"
 cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
 render "$MENUBAR_SVG" 144 "$DOCS/menubar-icon.png"
+
+if ICTOOL="$(dirname "$(xcode-select -p)")/Applications/Icon Composer.app/Contents/Executables/ictool" && [ -x "$ICTOOL" ]; then
+  "$ICTOOL" "$ICON_PACKAGE" --export-image --output-file /tmp/claudamangala-icon-check.png \
+    --platform macOS --rendition Default --width 64 --height 64 --scale 1 >/dev/null \
+    && echo "✓ Liquid Glass icon package validated with ictool"
+else
+  echo "⚠ ictool not found — skipped Claudamangala.icon validation"
+fi
 
 echo "✓ Icons generated in $ASSETS"
 echo "✓ Docs assets synced to $DOCS"
