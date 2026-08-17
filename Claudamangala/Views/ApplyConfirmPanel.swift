@@ -51,6 +51,7 @@ struct ApplyConfirmPanel: View {
     }
 
     private func apply() {
+        guard !isApplying else { return }
         isApplying = true
         applyError = nil
         do {

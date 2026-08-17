@@ -7,6 +7,13 @@ private enum CredentialSource: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+private enum KeychainLoadState: Equatable {
+    case idle
+    case loading
+    case loaded
+    case failed(String)
+}
+
 struct AddAccountSheet: View {
     @Bindable var accountsViewModel: AccountsViewModel
     let onFinished: () -> Void
@@ -15,7 +22,7 @@ struct AddAccountSheet: View {
     @State private var label = ""
     @State private var jsonText = ""
     @State private var keychainCredentials: ClaudeOAuthCredentials?
-    @State private var readError: String?
+    @State private var keychainLoadState: KeychainLoadState = .idle
     @State private var isSaving = false
     @State private var saveError: String?
 
@@ -61,10 +68,13 @@ struct AddAccountSheet: View {
         }
         .padding(16)
         .frame(width: 340)
-        .task { loadKeychainCredentialsIfNeeded() }
+        .onAppear {
+            loadKeychainCredentialsOnce()
+        }
         .onChange(of: source) { _, newSource in
-            if newSource == .keychain, keychainCredentials == nil {
-                loadKeychainCredentialsIfNeeded()
+            if newSource == .keychain, case .failed = keychainLoadState {
+                keychainLoadState = .idle
+                loadKeychainCredentialsOnce()
             }
         }
     }
@@ -73,21 +83,24 @@ struct AddAccountSheet: View {
     private var credentialSourceSection: some View {
         switch source {
         case .keychain:
-            if let readError {
-                Text(readError)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            } else if let credentials = keychainCredentials {
-                Text("Found current session, expires \(expiresDescription(credentials.expiresAt)).")
-                    .font(.caption)
-                    .foregroundStyle(.green)
-            } else {
+            switch keychainLoadState {
+            case .idle, .loading:
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
                     Text("Reading Keychain…")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+            case .loaded:
+                if let credentials = keychainCredentials {
+                    Text("Found current session, expires \(expiresDescription(credentials.expiresAt)).")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                }
+            case .failed(let message):
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
         case .json:
             Text("Paste `~/.claude/.credentials.json` or the claudeAiOauth block.")
@@ -110,7 +123,7 @@ struct AddAccountSheet: View {
         }
         switch source {
         case .keychain:
-            return keychainCredentials != nil
+            return keychainLoadState == .loaded && keychainCredentials != nil
         case .json:
             return parsedJSONCredentials != nil
         }
@@ -132,22 +145,37 @@ struct AddAccountSheet: View {
         }
     }
 
-    private func loadKeychainCredentialsIfNeeded() {
-        readError = nil
+    private func loadKeychainCredentialsOnce() {
+        guard source == .keychain else { return }
+        guard keychainLoadState == .idle else { return }
+
+        keychainLoadState = .loading
         do {
             keychainCredentials = try KeychainService.readCurrentClaudeCredentials()
+            keychainLoadState = .loaded
         } catch {
             keychainCredentials = nil
-            readError = error.localizedDescription
+            keychainLoadState = .failed(error.localizedDescription)
         }
     }
 
     private func addAccount() {
+        guard !isSaving else { return }
+
         isSaving = true
         saveError = nil
+
+        let credentials: ClaudeOAuthCredentials
+        do {
+            credentials = try resolvedCredentials()
+        } catch {
+            saveError = error.localizedDescription
+            isSaving = false
+            return
+        }
+
         Task {
             do {
-                let credentials = try resolvedCredentials()
                 try await accountsViewModel.addAccount(label: label, credentials: credentials)
                 await MainActor.run { onFinished() }
             } catch {
