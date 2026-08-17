@@ -20,9 +20,13 @@ final class AccountsViewModel {
     private var menuIsOpen = false
 
     func startListening(session: FirebaseSession) {
-        guard firestore == nil else { return }
-        firestore = FirestoreRESTService(session: session)
-        pipeline = PipelineTriggerService(session: session, firestore: firestore!)
+        if firestore == nil {
+            firestore = FirestoreRESTService(session: session)
+            pipeline = PipelineTriggerService(session: session, firestore: firestore!)
+        }
+        if menuIsOpen {
+            scheduleMenuFetch()
+        }
     }
 
     func stopListening() {
@@ -48,9 +52,14 @@ final class AccountsViewModel {
         defer { isLoadingAccounts = false }
 
         do {
-            accounts = try await firestore.fetchAccounts()
+            let fetched = try await firestore.fetchAccounts()
+            accounts = fetched.accounts
             permissionDenied = false
-            lastActionError = nil
+            if fetched.accounts.isEmpty, fetched.skippedDocumentCount > 0 {
+                lastActionError = "Found Firebase accounts but could not read them — check document fields."
+            } else {
+                lastActionError = nil
+            }
             if menuIsOpen {
                 hydrateUsageFromAccounts()
             }
@@ -168,8 +177,25 @@ final class AccountsViewModel {
 
     func menuDidOpen() {
         menuIsOpen = true
+        scheduleMenuFetch()
+    }
+
+    func menuDidClose() {
+        menuIsOpen = false
+        usageRefreshTask?.cancel()
+        usageRefreshTask = nil
+        usageByAccountId = [:]
+        refreshingUsageAccountIds = []
+    }
+
+    private func scheduleMenuFetch() {
         menuFetchTask?.cancel()
         menuFetchTask = Task {
+            guard firestore != nil else {
+                lastActionError = "Firebase is not connected yet — try again in a moment."
+                return
+            }
+
             await refreshAccounts()
             if Task.isCancelled { return }
             hydrateUsageFromAccounts()
@@ -177,16 +203,6 @@ final class AccountsViewModel {
                 refreshUsageFromAPIForAllAccounts()
             }
         }
-    }
-
-    func menuDidClose() {
-        menuIsOpen = false
-        menuFetchTask?.cancel()
-        menuFetchTask = nil
-        usageRefreshTask?.cancel()
-        usageRefreshTask = nil
-        usageByAccountId = [:]
-        refreshingUsageAccountIds = []
     }
 
     func refreshUsage(for account: ClaudeAccount) {

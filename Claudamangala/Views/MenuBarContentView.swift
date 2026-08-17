@@ -6,7 +6,16 @@ struct MenuBarContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if authViewModel.isSignedIn {
+            if authViewModel.isRestoringSession {
+                VStack(spacing: 10) {
+                    ProgressView().controlSize(.small)
+                    Text("Restoring session…")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(24)
+                .frame(width: 280)
+            } else if authViewModel.isSignedIn {
                 AccountListView(accountsViewModel: accountsViewModel)
                     .padding(16)
                     .frame(width: 340)
@@ -29,24 +38,28 @@ struct MenuBarContentView: View {
                 SignInView(authViewModel: authViewModel)
             }
         }
-        .id(authViewModel.isSignedIn)
         .onChange(of: authViewModel.isSignedIn) { _, signedIn in
             if signedIn, let session = authViewModel.session {
                 accountsViewModel.startListening(session: session)
+                accountsViewModel.menuDidOpen()
             } else {
                 accountsViewModel.stopListening()
             }
         }
-        .onAppear {
-            if authViewModel.isSignedIn, let session = authViewModel.session {
+        .onChange(of: authViewModel.isRestoringSession) { _, isRestoring in
+            guard !isRestoring, authViewModel.isSignedIn, let session = authViewModel.session else { return }
+            accountsViewModel.startListening(session: session)
+            accountsViewModel.menuDidOpen()
+        }
+        .onMenuBarWindowLifecycle(
+            onOpen: {
+                guard authViewModel.isSignedIn, let session = authViewModel.session else { return }
                 accountsViewModel.startListening(session: session)
-            }
-            if authViewModel.isSignedIn {
                 accountsViewModel.menuDidOpen()
+            },
+            onClose: {
+                accountsViewModel.menuDidClose()
             }
-        }
-        .onDisappear {
-            accountsViewModel.menuDidClose()
-        }
+        )
     }
 }

@@ -7,6 +7,11 @@ struct AccountRefreshSnapshot: Equatable {
     let updatedAtRaw: String?
 }
 
+struct FirestoreAccountsFetchResult {
+    let accounts: [ClaudeAccount]
+    let skippedDocumentCount: Int
+}
+
 struct FirestoreRESTService {
     let session: FirebaseSession
 
@@ -14,7 +19,7 @@ struct FirestoreRESTService {
         "https://firestore.googleapis.com/v1/projects/\(FirebaseConfig.projectId)/databases/(default)/documents"
     }
 
-    func fetchAccounts() async throws -> [ClaudeAccount] {
+    func fetchAccounts() async throws -> FirestoreAccountsFetchResult {
         let url = URL(string: "\(baseURL)/claude_accounts")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
@@ -24,9 +29,13 @@ struct FirestoreRESTService {
 
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let documents = json?["documents"] as? [[String: Any]] ?? []
-        return documents.compactMap(parseAccount).sorted {
+        let accounts = documents.compactMap(parseAccount).sorted {
             $0.label.localizedCaseInsensitiveCompare($1.label) == .orderedAscending
         }
+        return FirestoreAccountsFetchResult(
+            accounts: accounts,
+            skippedDocumentCount: max(0, documents.count - accounts.count)
+        )
     }
 
     func fetchAccount(id: String) async throws -> ClaudeAccount {
@@ -281,10 +290,11 @@ struct FirestoreRESTService {
             let accessToken = FirestoreValue.stringValue(fields["accessToken"]),
             let refreshToken = FirestoreValue.stringValue(fields["refreshToken"]),
             let expiresAt = FirestoreValue.numberValue(fields["expiresAt"]),
-            let scopes = FirestoreValue.stringArrayValue(fields["scopes"]),
-            let active = FirestoreValue.boolValue(fields["active"]),
-            let lastRefreshStatus = FirestoreValue.stringValue(fields["lastRefreshStatus"])
+            let scopes = FirestoreValue.stringArrayValue(fields["scopes"])
         else { return nil }
+
+        let active = FirestoreValue.boolValue(fields["active"]) ?? true
+        let lastRefreshStatus = FirestoreValue.stringValue(fields["lastRefreshStatus"]) ?? "never"
 
         return ClaudeAccount(
             id: id,
