@@ -54,13 +54,20 @@ struct ApplyConfirmPanel: View {
         guard !isApplying else { return }
         isApplying = true
         applyError = nil
-        do {
-            try accountsViewModel.applyAccount(account)
-            onSuccess(account.id ?? account.label)
-            onFinished()
-        } catch {
-            applyError = error.localizedDescription
-            isApplying = false
+
+        Task {
+            do {
+                try await accountsViewModel.applyAccount(account)
+                await MainActor.run {
+                    onSuccess(account.id ?? account.label)
+                    onFinished()
+                }
+            } catch {
+                await MainActor.run {
+                    applyError = error.localizedDescription
+                    isApplying = false
+                }
+            }
         }
     }
 }

@@ -10,111 +10,128 @@ enum KeychainService {
         let blob: KeychainCredentialsBlob
     }
 
+    private static let cacheLock = NSLock()
     private static var cachedEntry: CachedEntry?
-    private static var fetchInFlight = false
-    private static let lock = NSLock()
+    private static var inFlightRead: Task<(account: String, blob: KeychainCredentialsBlob), Error>?
 
-    static func readCurrentBlob() throws -> (account: String, blob: KeychainCredentialsBlob) {
+    // MARK: - Public (async — always prefer these)
+
+    static func readCurrentClaudeCredentials() async throws -> ClaudeOAuthCredentials {
+        try await readCurrentBlob().blob.claudeAiOauth
+    }
+
+    static func readCurrentBlob() async throws -> (account: String, blob: KeychainCredentialsBlob) {
         if let cached = cachedSnapshot() {
             return (cached.account, cached.blob)
         }
 
-        return try synchronizedFetch()
-    }
-
-    static func readCurrentClaudeCredentials() throws -> ClaudeOAuthCredentials {
-        try readCurrentBlob().blob.claudeAiOauth
-    }
-
-    static func writeCredentials(_ newCredentials: ClaudeOAuthCredentials) throws {
-        let account = try resolvedAccountNameForWrite()
-        let freshBlob = KeychainCredentialsBlob(claudeAiOauth: newCredentials, otherTopLevelKeys: [:])
-        let newData = try freshBlob.encode()
-
-        let matchQuery: [CFString: Any] = [
-            kSecClass: kSecClassGenericPassword,
-            kSecAttrService: service,
-            kSecAttrAccount: account,
-        ]
-        let updateFields: [CFString: Any] = [kSecValueData: newData]
-
-        var status = SecItemUpdate(matchQuery as CFDictionary, updateFields as CFDictionary)
-        if status == errSecItemNotFound {
-            try addFreshItem(newCredentials, account: account)
-            status = errSecSuccess
-        }
-        guard status == errSecSuccess else {
-            throw KeychainServiceError.osStatus(status)
+        if let inFlightRead {
+            return try await inFlightRead.value
         }
 
-        storeCache(account: account, blob: freshBlob)
+        let task = Task<(account: String, blob: KeychainCredentialsBlob), Error> {
+            try await KeychainAccessGate.whileAccessing {
+                try await performKeychainReadOffMainThread()
+            }
+        }
+
+        cacheLock.lock()
+        inFlightRead = task
+        cacheLock.unlock()
+
+        defer {
+            cacheLock.lock()
+            inFlightRead = nil
+            cacheLock.unlock()
+        }
+
+        let result = try await task.value
+        storeCache(account: result.account, blob: result.blob)
+        return result
+    }
+
+    static func writeCredentials(_ newCredentials: ClaudeOAuthCredentials) async throws {
+        try await KeychainAccessGate.whileAccessing {
+            try await performKeychainWriteOffMainThread(newCredentials)
+        }
     }
 
     static func clearCache() {
-        lock.lock()
+        cacheLock.lock()
         cachedEntry = nil
-        fetchInFlight = false
-        lock.unlock()
+        inFlightRead?.cancel()
+        inFlightRead = nil
+        cacheLock.unlock()
     }
 
     // MARK: - Private
 
     private static func cachedSnapshot() -> CachedEntry? {
-        lock.lock()
-        defer { lock.unlock() }
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
         return cachedEntry
     }
 
     private static func storeCache(account: String, blob: KeychainCredentialsBlob) {
-        lock.lock()
+        cacheLock.lock()
         cachedEntry = CachedEntry(account: account, blob: blob)
-        lock.unlock()
+        cacheLock.unlock()
         UserDefaults.standard.set(account, forKey: accountNameDefaultsKey)
     }
 
-    private static func resolvedAccountNameForWrite() throws -> String {
-        if let cached = cachedSnapshot() {
-            return cached.account
+    private static func performKeychainReadOffMainThread() async throws -> (account: String, blob: KeychainCredentialsBlob) {
+        try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    continuation.resume(returning: try fetchBlobFromKeychain())
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
         }
-        if let stored = UserDefaults.standard.string(forKey: accountNameDefaultsKey), !stored.isEmpty {
-            return stored
-        }
-        return try readCurrentBlob().account
     }
 
-    private static func synchronizedFetch() throws -> (account: String, blob: KeychainCredentialsBlob) {
-        lock.lock()
-        if let cached = cachedEntry {
-            lock.unlock()
-            return (cached.account, cached.blob)
+    private static func performKeychainWriteOffMainThread(_ newCredentials: ClaudeOAuthCredentials) async throws {
+        let account: String
+        if let cached = cachedSnapshot() {
+            account = cached.account
+        } else if let stored = UserDefaults.standard.string(forKey: accountNameDefaultsKey), !stored.isEmpty {
+            account = stored
+        } else {
+            let discovered = try await performKeychainReadOffMainThread()
+            storeCache(account: discovered.account, blob: discovered.blob)
+            account = discovered.account
         }
 
-        while fetchInFlight {
-            lock.unlock()
-            Thread.sleep(forTimeInterval: 0.05)
-            lock.lock()
-            if let cached = cachedEntry {
-                lock.unlock()
-                return (cached.account, cached.blob)
+        let freshBlob = KeychainCredentialsBlob(claudeAiOauth: newCredentials, otherTopLevelKeys: [:])
+        let newData = try freshBlob.encode()
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let matchQuery: [CFString: Any] = [
+                        kSecClass: kSecClassGenericPassword,
+                        kSecAttrService: service,
+                        kSecAttrAccount: account,
+                    ]
+                    let updateFields: [CFString: Any] = [kSecValueData: newData]
+
+                    var status = SecItemUpdate(matchQuery as CFDictionary, updateFields as CFDictionary)
+                    if status == errSecItemNotFound {
+                        try addFreshItem(newCredentials, account: account)
+                        status = errSecSuccess
+                    }
+                    guard status == errSecSuccess else {
+                        throw KeychainServiceError.osStatus(status)
+                    }
+                    continuation.resume()
+                } catch {
+                    continuation.resume(throwing: error)
+                }
             }
         }
 
-        fetchInFlight = true
-        lock.unlock()
-
-        defer {
-            lock.lock()
-            fetchInFlight = false
-            lock.unlock()
-        }
-
-        do {
-            let result = try fetchBlobFromKeychain()
-            storeCache(account: result.account, blob: result.blob)
-            return result
-        } catch {
-            throw error
-        }
+        storeCache(account: account, blob: freshBlob)
     }
 
     private static func fetchBlobFromKeychain() throws -> (account: String, blob: KeychainCredentialsBlob) {

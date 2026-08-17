@@ -20,6 +20,7 @@ final class AccountsViewModel {
     private var usageRefreshTask: Task<Void, Never>?
     private var menuFetchTask: Task<Void, Never>?
     private var menuIsOpen = false
+    private(set) var menuDismissToken = 0
 
     func startListening(session: FirebaseSession) {
         firestore = FirestoreRESTService(session: session, ownerUid: session.userId)
@@ -193,7 +194,7 @@ final class AccountsViewModel {
         return refreshingAccountIds.contains(accountId)
     }
 
-    func applyAccount(_ account: ClaudeAccount) throws {
+    func applyAccount(_ account: ClaudeAccount) async throws {
         let credentials = ClaudeOAuthCredentials(
             accessToken: account.accessToken,
             refreshToken: account.refreshToken,
@@ -203,7 +204,7 @@ final class AccountsViewModel {
             subscriptionType: nil,
             rateLimitTier: nil
         )
-        try KeychainService.writeCredentials(credentials)
+        try await KeychainService.writeCredentials(credentials)
     }
 
     func usage(for account: ClaudeAccount) -> ClaudeAccountUsage {
@@ -224,6 +225,7 @@ final class AccountsViewModel {
 
     func menuDidClose() {
         menuIsOpen = false
+        menuDismissToken += 1
         usageRefreshTask?.cancel()
         usageRefreshTask = nil
         usageByAccountId = [:]

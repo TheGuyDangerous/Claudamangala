@@ -57,6 +57,9 @@ struct AccountListView: View {
                 )
             }
         }
+        .onChange(of: accountsViewModel.menuDismissToken) { _, _ in
+            panel = .list
+        }
     }
 
     private var accountList: some View {

@@ -77,6 +77,7 @@ private struct MenuBarWindowLifecycleHook: NSViewRepresentable {
 
         private func markClosed() {
             guard isOpen else { return }
+            if KeychainAccessGate.isPresentingSystemUI { return }
             isOpen = false
             onClose?()
         }

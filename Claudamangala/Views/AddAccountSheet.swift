@@ -68,13 +68,10 @@ struct AddAccountSheet: View {
         }
         .padding(16)
         .frame(width: 340)
-        .onAppear {
-            loadKeychainCredentialsOnce()
-        }
         .onChange(of: source) { _, newSource in
-            if newSource == .keychain, case .failed = keychainLoadState {
+            if newSource == .json {
                 keychainLoadState = .idle
-                loadKeychainCredentialsOnce()
+                keychainCredentials = nil
             }
         }
     }
@@ -84,7 +81,17 @@ struct AddAccountSheet: View {
         switch source {
         case .keychain:
             switch keychainLoadState {
-            case .idle, .loading:
+            case .idle:
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Reads the active Claude Code session from Keychain once.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Button("Read current session") {
+                        loadKeychainCredentials()
+                    }
+                    .buttonStyle(.glass)
+                }
+            case .loading:
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
                     Text("Reading Keychain…")
@@ -98,9 +105,16 @@ struct AddAccountSheet: View {
                         .foregroundStyle(.green)
                 }
             case .failed(let message):
-                Text(message)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    Button("Try again") {
+                        loadKeychainCredentials()
+                    }
+                    .buttonStyle(.plain)
                     .font(.caption)
-                    .foregroundStyle(.red)
+                }
             }
         case .json:
             Text("Paste `~/.claude/.credentials.json` or the claudeAiOauth block.")
@@ -145,17 +159,24 @@ struct AddAccountSheet: View {
         }
     }
 
-    private func loadKeychainCredentialsOnce() {
-        guard source == .keychain else { return }
-        guard keychainLoadState == .idle else { return }
-
+    private func loadKeychainCredentials() {
+        guard keychainLoadState != .loading else { return }
         keychainLoadState = .loading
-        do {
-            keychainCredentials = try KeychainService.readCurrentClaudeCredentials()
-            keychainLoadState = .loaded
-        } catch {
-            keychainCredentials = nil
-            keychainLoadState = .failed(error.localizedDescription)
+        saveError = nil
+
+        Task {
+            do {
+                let credentials = try await KeychainService.readCurrentClaudeCredentials()
+                await MainActor.run {
+                    keychainCredentials = credentials
+                    keychainLoadState = .loaded
+                }
+            } catch {
+                await MainActor.run {
+                    keychainCredentials = nil
+                    keychainLoadState = .failed(error.localizedDescription)
+                }
+            }
         }
     }
 
