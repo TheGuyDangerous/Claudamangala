@@ -28,21 +28,14 @@ struct AccountRowView: View {
 
                 Spacer(minLength: 4)
 
-                Button(action: onEdit) {
-                    Image(systemName: "pencil")
+                ToolbarIconCluster {
+                    ToolbarIconButton(systemName: "square.and.pencil", help: "Edit label and credentials") {
+                        onEdit()
+                    }
+                    ToolbarIconButton(systemName: "minus", help: "Delete account") {
+                        onDelete()
+                    }
                 }
-                .buttonStyle(.plain)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .help("Edit label and credentials")
-
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.plain)
-                .font(.caption)
-                .foregroundStyle(.red.opacity(0.85))
-                .help("Delete account")
             }
 
             HStack(spacing: 12) {
@@ -65,19 +58,15 @@ struct AccountRowView: View {
                             .foregroundStyle(.tertiary)
                     }
                     Spacer()
-                    Button(action: onRefreshUsage) {
-                        if isRefreshingUsage {
-                            ProgressView().controlSize(.mini)
-                        } else {
-                            Label("Refresh limits", systemImage: "arrow.clockwise")
-                                .labelStyle(.iconOnly)
+                    if isRefreshingUsage {
+                        ProgressView()
+                            .controlSize(.mini)
+                            .frame(width: 24, height: 24)
+                    } else {
+                        ToolbarIconButton(systemName: "arrow.triangle.2.circlepath", help: "Refresh limits") {
+                            onRefreshUsage()
                         }
                     }
-                    .buttonStyle(.plain)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .disabled(isRefreshingUsage)
-                    .help("Refresh 5-hour and weekly limits")
                 }
 
                 UsageMeterBar(

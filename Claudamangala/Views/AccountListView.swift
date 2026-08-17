@@ -80,19 +80,14 @@ struct AccountListView: View {
                 Text("Claudamangala")
                     .font(.headline)
                 Spacer()
-                Button {
-                    panel = .preferences
-                } label: {
-                    Image(systemName: "gearshape")
+                ToolbarIconCluster {
+                    ToolbarIconButton(systemName: "slider.horizontal.3", help: "Preferences") {
+                        panel = .preferences
+                    }
+                    ToolbarIconButton(systemName: "plus", help: "Add account") {
+                        panel = .add
+                    }
                 }
-                .buttonStyle(.plain)
-                .help("Preferences")
-                Button {
-                    panel = .add
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .buttonStyle(.plain)
             }
 
             ScrollView(.vertical, showsIndicators: true) {
