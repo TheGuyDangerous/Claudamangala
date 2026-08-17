@@ -11,17 +11,7 @@ struct PreferencesPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Button {
-                    onFinished()
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-                .buttonStyle(.plain)
-
-                Text("Preferences")
-                    .font(.headline)
-            }
+            PanelBackHeader(title: "Preferences", onBack: onFinished)
 
             Text("Token refresh")
                 .font(.subheadline.weight(.semibold))

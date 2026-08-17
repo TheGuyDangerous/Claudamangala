@@ -14,17 +14,7 @@ struct AddAccountSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Button {
-                    onFinished()
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-                .buttonStyle(.plain)
-
-                Text("Add Account")
-                    .font(.headline)
-            }
+            PanelBackHeader(title: "Add Account", onBack: onFinished)
 
             if let readError {
                 Text(readError)

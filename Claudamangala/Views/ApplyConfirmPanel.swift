@@ -11,17 +11,7 @@ struct ApplyConfirmPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Button {
-                    onFinished()
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-                .buttonStyle(.plain)
-
-                Text("Switch Account")
-                    .font(.headline)
-            }
+            PanelBackHeader(title: "Switch Account", onBack: onFinished)
 
             Text("Switch to \"\(account.label)\"?")
                 .font(.body)

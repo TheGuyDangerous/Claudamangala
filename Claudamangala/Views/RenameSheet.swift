@@ -23,17 +23,7 @@ struct RenameSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Button {
-                    onFinished()
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-                .buttonStyle(.plain)
-
-                Text("Rename Account")
-                    .font(.headline)
-            }
+            PanelBackHeader(title: "Rename Account", onBack: onFinished)
 
             TextField("Label", text: $newLabel)
                 .textFieldStyle(.roundedBorder)
