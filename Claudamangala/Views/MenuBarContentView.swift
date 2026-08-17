@@ -30,14 +30,27 @@ struct MenuBarContentView: View {
                     .padding(.top, 2)
 
                 HStack {
-                    Button("Sign Out") { authViewModel.signOut() }
-                        .buttonStyle(.plain)
-                        .font(.caption)
+                    Button {
+                        authViewModel.signOut()
+                    } label: {
+                        footerActionLabel("Sign Out", shortcut: "⌘S")
+                    }
+                    .buttonStyle(.plain)
+                    .keyboardShortcut("s", modifiers: .command)
+                    .help("Sign Out (⌘S)")
+
                     Spacer()
-                    Button("Quit") { NSApplication.shared.terminate(nil) }
-                        .buttonStyle(.plain)
-                        .font(.caption)
+
+                    Button {
+                        NSApplication.shared.terminate(nil)
+                    } label: {
+                        footerActionLabel("Quit", shortcut: "⌘Q")
+                    }
+                    .buttonStyle(.plain)
+                    .keyboardShortcut("q", modifiers: .command)
+                    .help("Quit (⌘Q)")
                 }
+                .font(.caption)
                 .padding(.horizontal, 12)
                 .padding(.top, 4)
                 .padding(.bottom, 12)
@@ -71,5 +84,14 @@ struct MenuBarContentView: View {
                 accountsViewModel.menuDidClose()
             }
         )
+    }
+
+    private func footerActionLabel(_ title: String, shortcut: String) -> some View {
+        HStack(spacing: 6) {
+            Text(title)
+            Text(shortcut)
+                .font(.caption.weight(.medium).monospaced())
+                .foregroundStyle(.tertiary)
+        }
     }
 }

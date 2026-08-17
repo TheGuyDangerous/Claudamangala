@@ -82,12 +82,21 @@ struct SignInView: View {
 
             Divider().padding(.top, 4)
 
-            Button("Quit Claudamangala") {
+            Button {
                 NSApplication.shared.terminate(nil)
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Quit Claudamangala")
+                    Text("⌘Q")
+                        .font(.caption.weight(.medium).monospaced())
+                        .foregroundStyle(.tertiary)
+                }
             }
             .buttonStyle(.plain)
             .font(.caption)
             .foregroundStyle(.secondary)
+            .keyboardShortcut("q", modifiers: .command)
+            .help("Quit (⌘Q)")
         }
         .padding(16)
         .frame(width: 300)
