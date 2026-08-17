@@ -1,52 +1,32 @@
 {
-  "fill-specializations": [
+  "fill" : {
+    "solid" : "extended-srgb:1.00000,1.00000,1.00000,1.00000"
+  },
+  "groups" : [
     {
-      "value": {
-        "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
-      }
-    },
-    {
-      "appearance": "dark",
-      "value": {
-        "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
-      }
-    }
-  ],
-  "groups": [
-    {
-      "name": "Cloud Spark",
-      "layers": [
+      "name" : "Cloud Spark",
+      "layers" : [
         {
-          "name": "Spark",
-          "image-name": "cloud-spark.svg",
-          "glass": true,
-          "fill-specializations": [
-            {
-              "value": {
-                "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
-              }
-            },
-            {
-              "appearance": "dark",
-              "value": {
-                "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
-              }
-            }
-          ]
+          "name" : "Spark",
+          "image-name" : "cloud-spark.svg",
+          "glass" : true,
+          "fill" : {
+            "solid" : "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+          }
         }
       ],
-      "shadow": {
-        "kind": "neutral",
-        "opacity": 0.32
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.32
       },
-      "specular": true,
-      "translucency": {
-        "enabled": true,
-        "value": 0.18
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.18
       }
     }
   ],
-  "supported-platforms": {
-    "squares": ["macOS"]
+  "supported-platforms" : {
+    "squares" : ["macOS"]
   }
 }

@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="800" viewBox="0 0 1320 800">
-  <rect width="1320" height="800" fill="#FFFFFF"/>
-  <text x="660" y="118" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="700" font-size="64" fill="#111111">Claudamangala</text>
-  <g fill="#C8C8C8">
-    <rect x="560" y="372" width="180" height="36" rx="18"/>
-    <path d="M740 338 L820 390 L740 442 Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="800" viewBox="0 0 660 400">
+  <rect width="660" height="400" fill="#FFFFFF"/>
+  <text x="36" y="52" text-anchor="start" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-weight="700" font-size="28" fill="#111111">Claudamangala</text>
+  <g fill="#C8C8C8" transform="translate(330 185)">
+    <rect x="-48" y="-8" width="72" height="16" rx="8"/>
+    <path d="M24 -22 L64 0 L24 22 Z"/>
   </g>
 </svg>
