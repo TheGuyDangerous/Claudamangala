@@ -90,12 +90,16 @@ struct AccountListView: View {
                         account: account,
                         usage: accountsViewModel.usage(for: account),
                         isRefreshing: accountsViewModel.isRefreshing(accountId: account.id),
+                        isRefreshingUsage: accountsViewModel.isRefreshingUsage(accountId: account.id),
                         isJustApplied: lastAppliedAccountId == (account.id ?? account.label),
                         onApply: {
                             panel = .apply(account: account)
                         },
                         onRefresh: {
                             triggerRefresh(for: account)
+                        },
+                        onRefreshUsage: {
+                            accountsViewModel.refreshUsage(for: account)
                         },
                         onRename: {
                             guard let id = account.id else { return }

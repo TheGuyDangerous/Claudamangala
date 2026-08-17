@@ -12,9 +12,11 @@ final class AccountsViewModel {
     private var firestore: FirestoreRESTService?
     private var pipeline: PipelineTriggerService?
     var refreshingAccountIds: Set<String> = []
+    var refreshingUsageAccountIds: Set<String> = []
     var usageByAccountId: [String: ClaudeAccountUsage] = [:]
 
     private var usageRefreshTask: Task<Void, Never>?
+    private var menuIsOpen = false
 
     func startListening(session: FirebaseSession) {
         firestore = FirestoreRESTService(session: session)
@@ -37,6 +39,7 @@ final class AccountsViewModel {
         firestore = nil
         pipeline = nil
         refreshingAccountIds = []
+        refreshingUsageAccountIds = []
         accounts = []
         usageByAccountId = [:]
         permissionDenied = false
@@ -49,7 +52,9 @@ final class AccountsViewModel {
             accounts = try await firestore.fetchAccounts()
             permissionDenied = false
             lastActionError = nil
-            refreshUsageIfNeeded()
+            if menuIsOpen, usageByAccountId.isEmpty, !accounts.isEmpty {
+                refreshUsageForAllAccounts()
+            }
         } catch let error as FirestoreRESTError {
             if case .permissionDenied = error {
                 permissionDenied = true
@@ -113,18 +118,56 @@ final class AccountsViewModel {
 
     func usage(for account: ClaudeAccount) -> ClaudeAccountUsage {
         guard let id = account.id else { return .unavailable }
-        return usageByAccountId[id] ?? .loading
+        return usageByAccountId[id] ?? .unavailable
     }
 
-    private func refreshUsageIfNeeded() {
+    func isRefreshingUsage(accountId: String?) -> Bool {
+        guard let accountId else { return false }
+        return refreshingUsageAccountIds.contains(accountId)
+    }
+
+    func menuDidOpen() {
+        menuIsOpen = true
+        refreshUsageForAllAccounts()
+    }
+
+    func menuDidClose() {
+        menuIsOpen = false
         usageRefreshTask?.cancel()
-        let snapshot = accounts
-        usageRefreshTask = Task {
-            await refreshUsage(for: snapshot)
+        usageRefreshTask = nil
+        usageByAccountId = [:]
+        refreshingUsageAccountIds = []
+    }
+
+    func refreshUsage(for account: ClaudeAccount) {
+        guard let id = account.id else { return }
+        usageRefreshTask?.cancel()
+
+        Task {
+            refreshingUsageAccountIds.insert(id)
+            defer { refreshingUsageAccountIds.remove(id) }
+            usageByAccountId[id] = .loading
+
+            do {
+                let usage = try await ClaudeUsageService.fetch(accessToken: account.accessToken)
+                usageByAccountId[id] = usage
+            } catch {
+                usageByAccountId[id] = .unavailable
+            }
         }
     }
 
-    private func refreshUsage(for accounts: [ClaudeAccount]) async {
+    func refreshUsageForAllAccounts() {
+        usageRefreshTask?.cancel()
+        let snapshot = accounts
+        guard !snapshot.isEmpty else { return }
+
+        usageRefreshTask = Task {
+            await fetchUsage(for: snapshot)
+        }
+    }
+
+    private func fetchUsage(for accounts: [ClaudeAccount]) async {
         await withTaskGroup(of: (String, ClaudeAccountUsage).self) { group in
             for account in accounts {
                 guard let id = account.id else { continue }

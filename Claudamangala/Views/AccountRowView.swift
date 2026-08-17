@@ -5,9 +5,11 @@ struct AccountRowView: View {
     let account: ClaudeAccount
     let usage: ClaudeAccountUsage
     let isRefreshing: Bool
+    let isRefreshingUsage: Bool
     let isJustApplied: Bool
     let onApply: () -> Void
     let onRefresh: () -> Void
+    let onRefreshUsage: () -> Void
     let onRename: () -> Void
 
     @State private var justCopied = false
@@ -42,6 +44,26 @@ struct AccountRowView: View {
                 ProgressView().controlSize(.small)
                     .frame(maxWidth: .infinity)
             } else {
+                HStack {
+                    Text("Limits")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button(action: onRefreshUsage) {
+                        if isRefreshingUsage {
+                            ProgressView().controlSize(.mini)
+                        } else {
+                            Label("Refresh limits", systemImage: "arrow.clockwise")
+                                .labelStyle(.iconOnly)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .disabled(isRefreshingUsage)
+                    .help("Refresh 5-hour and weekly limits")
+                }
+
                 UsageMeterBar(
                     label: "5-hour window",
                     value: usage.fiveHourAvailable,

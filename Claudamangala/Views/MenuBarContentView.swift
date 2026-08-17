@@ -41,6 +41,12 @@ struct MenuBarContentView: View {
             if authViewModel.isSignedIn, let session = authViewModel.session {
                 accountsViewModel.startListening(session: session)
             }
+            if authViewModel.isSignedIn {
+                accountsViewModel.menuDidOpen()
+            }
+        }
+        .onDisappear {
+            accountsViewModel.menuDidClose()
         }
     }
 }
