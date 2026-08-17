@@ -3,7 +3,6 @@ import SwiftUI
 struct UsageMeterBar: View {
     let label: String
     let value: Double?
-    let level: UsageLevel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -15,7 +14,7 @@ struct UsageMeterBar: View {
                 if let value {
                     Text("\(Int(value.rounded()))% left")
                         .font(.caption2.weight(.semibold).monospacedDigit())
-                        .foregroundStyle(level.color)
+                        .foregroundStyle(.primary)
                 } else {
                     Text("—")
                         .font(.caption2)
@@ -25,9 +24,9 @@ struct UsageMeterBar: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(.primary.opacity(0.08))
+                        .fill(.primary.opacity(0.1))
                     Capsule()
-                        .fill(level.color.opacity(0.85))
+                        .fill(.primary.opacity(0.55))
                         .frame(width: geo.size.width * CGFloat((value ?? 0) / 100))
                 }
             }
@@ -75,17 +74,6 @@ struct AccountActionButtons: View {
                 .buttonStyle(.glass)
                 .disabled(isRefreshing)
             }
-        }
-    }
-}
-
-extension UsageLevel {
-    var color: Color {
-        switch self {
-        case .healthy: return .green
-        case .low: return .orange
-        case .critical: return .red
-        case .unknown: return .secondary
         }
     }
 }

@@ -54,12 +54,14 @@ struct PreferencesPanel: View {
         title: String,
         subtitle: String,
         isSelected: Bool,
-        action: @escaping () -> Void
+        onSelect: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        Button {
+            onSelect()
+        } label: {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
                     .font(.body)
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -76,11 +78,11 @@ struct PreferencesPanel: View {
             .padding(10)
             .background {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.1) : .primary.opacity(0.04))
+                    .fill((isSelected ? Color.primary.opacity(0.1) : Color.primary.opacity(0.04)))
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .strokeBorder(
-                                isSelected ? Color.accentColor.opacity(0.35) : .primary.opacity(0.08),
+                                isSelected ? Color.primary.opacity(0.2) : Color.primary.opacity(0.08),
                                 lineWidth: 0.5
                             )
                     }

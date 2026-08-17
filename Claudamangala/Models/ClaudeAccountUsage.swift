@@ -33,24 +33,4 @@ struct ClaudeAccountUsage: Equatable {
         guard let value = weeklyAvailable else { return "—" }
         return "\(Int(value.rounded()))%"
     }
-
-    func availabilityColor(for value: Double?) -> UsageLevel {
-        guard let value else { return .unknown }
-        if value <= 10 { return .critical }
-        if value <= 30 { return .low }
-        return .healthy
-    }
-}
-
-enum UsageLevel {
-    case healthy, low, critical, unknown
-
-    var colorName: String {
-        switch self {
-        case .healthy: return "green"
-        case .low: return "orange"
-        case .critical: return "red"
-        case .unknown: return "secondary"
-        }
-    }
 }

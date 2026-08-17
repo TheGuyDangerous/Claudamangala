@@ -72,13 +72,11 @@ struct AccountRowView: View {
 
                 UsageMeterBar(
                     label: "5-hour window",
-                    value: usage.fiveHourAvailable,
-                    level: usage.availabilityColor(for: usage.fiveHourAvailable)
+                    value: usage.fiveHourAvailable
                 )
                 UsageMeterBar(
                     label: "Weekly window",
-                    value: usage.weeklyAvailable,
-                    level: usage.availabilityColor(for: usage.weeklyAvailable)
+                    value: usage.weeklyAvailable
                 )
             }
 
