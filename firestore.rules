@@ -9,8 +9,8 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
 
-    // Pipeline trigger config (optional Firestore fallback for cloud refresh).
-    // Owner only — contains GitHub dispatch credentials.
+    // Owner-only in Firestore rules. Claudamangala probes read access here
+    // to decide whether Local vs Cloud refresh appears in Preferences.
     match /app_config/{docId} {
       allow read, write: if request.auth != null
                          && request.auth.uid == "tRrq8mT9vaVVacjbo5OPHFMK53L2";

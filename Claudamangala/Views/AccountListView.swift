@@ -12,7 +12,6 @@ struct AccountListView: View {
     @Bindable var accountsViewModel: AccountsViewModel
     @Bindable var updateViewModel: UpdateViewModel
     let localRefreshScheduler: LocalRefreshScheduler
-    let userEmail: String?
 
     @State private var panel: AccountPanel = .list
     @State private var lastAppliedAccountId: String?
@@ -25,8 +24,8 @@ struct AccountListView: View {
             case .preferences:
                 PreferencesPanel(
                     updateViewModel: updateViewModel,
-                    localRefreshScheduler: localRefreshScheduler,
-                    userEmail: userEmail
+                    accountsViewModel: accountsViewModel,
+                    localRefreshScheduler: localRefreshScheduler
                 ) {
                     panel = .list
                 }

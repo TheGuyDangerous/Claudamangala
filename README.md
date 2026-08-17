@@ -137,7 +137,9 @@ You only need to do this once per Mac.
 3. Send a built `.dmg` with `GoogleService-Info.plist` and `PipelineConfig.plist` already bundled, plus their login.
 4. They add accounts from their own Keychain via the **+** button.
 
-**Why this matters:** rules like `request.auth.uid == "YOUR_UID"` only allow the owner. Friends will see “Firestore access denied” when adding accounts until `claude_accounts` allows any authenticated user.
+**Why this matters:** rules like `request.auth.uid == "YOUR_UID"` only allow the owner on `claude_accounts`. Friends will see “Firestore access denied” when adding accounts until `claude_accounts` allows any authenticated user.
+
+**Cloud refresh (owner only):** Claudamangala shows Local/Cloud manual refresh only if Firestore rules grant read access to `app_config` (see `app_config` match in `firestore.rules`). Add another UID there to grant cloud refresh — no app rebuild required.
 
 ## Refresh flow
 

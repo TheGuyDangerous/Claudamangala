@@ -77,6 +77,29 @@ struct FirestoreRESTService {
         )
     }
 
+    func checkCloudRefreshAccess() async -> Bool {
+        let url = URL(string: "\(baseURL)/app_config/pipeline")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        do {
+            request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
+            let (_, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse else { return false }
+
+            switch http.statusCode {
+            case 200, 404:
+                return true
+            case 403:
+                return false
+            default:
+                return false
+            }
+        } catch {
+            return false
+        }
+    }
+
     func fetchPipelineConfig() async throws -> PipelineConfig {
         let url = URL(string: "\(baseURL)/app_config/pipeline")!
         var request = URLRequest(url: url)

@@ -8,18 +8,18 @@ struct PreferencesPanel: View {
     @AppStorage(UpdatePreferences.installAutomaticallyKey) private var installUpdatesAutomatically = true
     @AppStorage(LocalRefreshSchedulePreferences.scheduleKey) private var localRefreshScheduleRaw = LocalRefreshSchedule.off.rawValue
     @Bindable var updateViewModel: UpdateViewModel
+    @Bindable var accountsViewModel: AccountsViewModel
     let localRefreshScheduler: LocalRefreshScheduler
-    let userEmail: String?
     let onFinished: () -> Void
 
     @State private var launchAtLoginError: String?
 
     private var canUseCloudRefresh: Bool {
-        RefreshPreferences.canUseCloudRefresh(email: userEmail)
+        accountsViewModel.canUseCloudRefresh
     }
 
     private var oauthRefreshMode: OAuthRefreshMode {
-        RefreshPreferences.oauthRefreshMode(for: userEmail)
+        RefreshPreferences.oauthRefreshMode(canUseCloudRefresh: canUseCloudRefresh)
     }
 
     private var localRefreshSchedule: LocalRefreshSchedule {
@@ -164,6 +164,7 @@ struct PreferencesPanel: View {
             if !canUseCloudRefresh, oauthRefreshModeRaw == OAuthRefreshMode.cloud.rawValue {
                 oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
             }
+            Task { await accountsViewModel.refreshCloudRefreshAccess() }
         }
         .onChange(of: launchAtLogin) { _, enabled in
             launchAtLoginError = nil
@@ -184,7 +185,7 @@ struct PreferencesPanel: View {
             if localRefreshSchedule == .off {
                 LocalRefreshSchedulePreferences.lastRunAt = nil
             }
-            localRefreshScheduler.reschedule(email: userEmail)
+            localRefreshScheduler.reschedule()
         }
     }
 

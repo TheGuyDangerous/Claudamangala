@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 final class FirebaseSession {
     private(set) var email: String
+    private(set) var userId: String
     private(set) var idToken: String
     private(set) var refreshToken: String
     private var expiresAt: Date
@@ -11,6 +12,7 @@ final class FirebaseSession {
 
     private init(email: String, idToken: String, refreshToken: String, expiresIn: TimeInterval) {
         self.email = email
+        self.userId = JWTDecoder.userId(from: idToken) ?? ""
         self.idToken = idToken
         self.refreshToken = refreshToken
         self.expiresAt = Date().addingTimeInterval(expiresIn)
@@ -139,6 +141,7 @@ final class FirebaseSession {
         }
 
         idToken = newIDToken
+        userId = JWTDecoder.userId(from: newIDToken) ?? userId
         refreshToken = newRefresh
         expiresAt = Date().addingTimeInterval(expiresIn)
         persist()

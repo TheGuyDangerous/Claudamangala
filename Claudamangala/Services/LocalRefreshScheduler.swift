@@ -4,23 +4,19 @@ import Foundation
 final class LocalRefreshScheduler {
     private weak var accountsViewModel: AccountsViewModel?
     private var timerTask: Task<Void, Never>?
-    private var signedInEmail: String?
 
-    func start(accountsViewModel: AccountsViewModel, email: String?) {
+    func start(accountsViewModel: AccountsViewModel) {
         self.accountsViewModel = accountsViewModel
-        signedInEmail = email
-        reschedule(email: email)
+        reschedule()
     }
 
     func stop() {
         timerTask?.cancel()
         timerTask = nil
         accountsViewModel = nil
-        signedInEmail = nil
     }
 
-    func reschedule(email: String?) {
-        signedInEmail = email
+    func reschedule() {
         timerTask?.cancel()
         timerTask = nil
 
