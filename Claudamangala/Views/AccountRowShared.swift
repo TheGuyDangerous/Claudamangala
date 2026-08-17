@@ -4,6 +4,10 @@ struct UsageMeterBar: View {
     let label: String
     let value: Double?
 
+    private var used: Double? {
+        value.map(ClaudeAccountUsage.usedValue(fromAvailable:))
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
@@ -11,8 +15,8 @@ struct UsageMeterBar: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 Spacer()
-                if let value {
-                    Text("\(Int(value.rounded()))% left")
+                if let used {
+                    Text("\(Int(used.rounded()))% used")
                         .font(.caption2.weight(.semibold).monospacedDigit())
                         .foregroundStyle(.primary)
                 } else {
@@ -27,7 +31,7 @@ struct UsageMeterBar: View {
                         .fill(.primary.opacity(0.1))
                     Capsule()
                         .fill(.primary.opacity(0.55))
-                        .frame(width: geo.size.width * CGFloat((value ?? 0) / 100))
+                        .frame(width: geo.size.width * CGFloat((used ?? 0) / 100))
                 }
             }
             .frame(height: 5)

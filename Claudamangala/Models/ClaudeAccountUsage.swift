@@ -25,12 +25,19 @@ struct ClaudeAccountUsage: Equatable {
     }
 
     var fiveHourDisplay: String {
-        guard let value = fiveHourAvailable else { return "—" }
-        return "\(Int(value.rounded()))%"
+        Self.usedDisplay(fromAvailable: fiveHourAvailable)
     }
 
     var weeklyDisplay: String {
-        guard let value = weeklyAvailable else { return "—" }
-        return "\(Int(value.rounded()))%"
+        Self.usedDisplay(fromAvailable: weeklyAvailable)
+    }
+
+    static func usedValue(fromAvailable available: Double) -> Double {
+        min(100, max(0, 100 - available))
+    }
+
+    static func usedDisplay(fromAvailable available: Double?) -> String {
+        guard let available else { return "—" }
+        return "\(Int(usedValue(fromAvailable: available).rounded()))%"
     }
 }
