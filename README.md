@@ -19,6 +19,8 @@ A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored i
 - **Copy** — copies `{"claudeAiOauth":{...}}` JSON to the clipboard
 - **Refresh** — asks a remote pipeline to refresh one account on demand
 - **Rename / Add** — inline panels (no sheets — works reliably inside `MenuBarExtra`)
+- **Launch at login** — optional toggle in Preferences
+- **Auto-update** — checks GitHub Releases for a newer DMG and can install to Applications
 - **Glass UI** — compact ~400px popup, no system blue accent
 
 ## How it fits together

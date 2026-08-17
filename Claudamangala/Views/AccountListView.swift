@@ -10,6 +10,7 @@ private enum AccountPanel: Equatable {
 
 struct AccountListView: View {
     @Bindable var accountsViewModel: AccountsViewModel
+    @Bindable var updateViewModel: UpdateViewModel
     let userEmail: String?
 
     @State private var panel: AccountPanel = .list
@@ -21,7 +22,10 @@ struct AccountListView: View {
             case .list:
                 accountList
             case .preferences:
-                PreferencesPanel(userEmail: userEmail) {
+                PreferencesPanel(
+                    updateViewModel: updateViewModel,
+                    userEmail: userEmail
+                ) {
                     panel = .list
                 }
             case .add:

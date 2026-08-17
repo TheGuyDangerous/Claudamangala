@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarContentView: View {
     @Bindable var authViewModel: AuthViewModel
     @Bindable var accountsViewModel: AccountsViewModel
+    @Bindable var updateViewModel: UpdateViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -18,6 +19,7 @@ struct MenuBarContentView: View {
             } else if authViewModel.isSignedIn {
                 AccountListView(
                     accountsViewModel: accountsViewModel,
+                    updateViewModel: updateViewModel,
                     userEmail: authViewModel.session?.email
                 )
                     .padding(16)
