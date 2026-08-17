@@ -8,6 +8,43 @@ struct ClaudeOAuthCredentials: Codable, Equatable {
     var refreshTokenExpiresAt: Double?
     var subscriptionType: String?
     var rateLimitTier: String?
+
+    /// Parses credentials exported from Claude Code (`claudeAiOauth` wrapper) or a bare oauth object.
+    static func parse(importedJSON text: String) throws -> ClaudeOAuthCredentials {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw ClaudeOAuthCredentialsParseError.empty
+        }
+        guard let data = trimmed.data(using: .utf8) else {
+            throw ClaudeOAuthCredentialsParseError.invalidEncoding
+        }
+
+        if let raw = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let oauthDict = raw["claudeAiOauth"]
+        {
+            let oauthData = try JSONSerialization.data(withJSONObject: oauthDict)
+            return try JSONDecoder().decode(ClaudeOAuthCredentials.self, from: oauthData)
+        }
+
+        return try JSONDecoder().decode(ClaudeOAuthCredentials.self, from: data)
+    }
+}
+
+enum ClaudeOAuthCredentialsParseError: Error, LocalizedError {
+    case empty
+    case invalidEncoding
+    case invalidFormat
+
+    var errorDescription: String? {
+        switch self {
+        case .empty:
+            return "Paste the JSON credentials first."
+        case .invalidEncoding:
+            return "Could not read the pasted text."
+        case .invalidFormat:
+            return "JSON must include claudeAiOauth (or accessToken, refreshToken, expiresAt, scopes)."
+        }
+    }
 }
 
 struct KeychainCredentialsBlob {

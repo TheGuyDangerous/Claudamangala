@@ -90,15 +90,27 @@ final class AccountsViewModel {
         }
     }
 
-    func addAccount(docId: String, label: String, credentials: ClaudeOAuthCredentials) async throws {
+    func addAccount(label: String, credentials: ClaudeOAuthCredentials) async throws {
         guard let firestore else { return }
 
-        if try await firestore.documentExists(id: docId) {
-            throw AddAccountError.duplicateId
-        }
-
+        let docId = try await uniqueDocumentId(forLabel: label)
         try await firestore.createAccount(docId: docId, label: label, credentials: credentials)
         await refreshAccounts()
+    }
+
+    private func uniqueDocumentId(forLabel label: String) async throws -> String {
+        guard let firestore else { return "account" }
+
+        let base = AccountDocumentId.slug(from: label)
+        guard !base.isEmpty else { throw AddAccountError.invalidLabel }
+
+        var candidate = base
+        var suffix = 2
+        while try await firestore.documentExists(id: candidate) {
+            candidate = "\(base)-\(suffix)"
+            suffix += 1
+        }
+        return candidate
     }
 
     func triggerRefresh(accountId: String?) async throws {
@@ -321,11 +333,14 @@ final class AccountsViewModel {
 
 enum AddAccountError: Error, LocalizedError {
     case duplicateId
+    case invalidLabel
 
     var errorDescription: String? {
         switch self {
         case .duplicateId:
-            return "An account with this ID already exists — choose a different ID."
+            return "An account with this ID already exists — choose a different label."
+        case .invalidLabel:
+            return "Enter a label with at least one letter or number."
         }
     }
 }
