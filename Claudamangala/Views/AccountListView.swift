@@ -172,6 +172,10 @@ struct AccountListView: View {
                         },
                         onDelete: {
                             panel = .delete(account: account)
+                        },
+                        isPinnedToMenuBar: accountsViewModel.isPinnedToMenuBar(accountId: account.id),
+                        onToggleMenuBarLimits: {
+                            accountsViewModel.toggleMenuBarLimits(accountId: account.id)
                         }
                     )
                     if account.listId != accountsViewModel.accounts.last?.listId {

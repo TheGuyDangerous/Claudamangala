@@ -21,6 +21,33 @@ final class AccountsViewModel {
     private var menuFetchTask: Task<Void, Never>?
     private var menuIsOpen = false
     private(set) var menuDismissToken = 0
+    var menuBarPinnedAccountId: String? = UsagePreferences.menuBarPinnedAccountId
+
+    var menuBarUsageCaption: String? {
+        guard
+            let pinnedId = menuBarPinnedAccountId,
+            let account = accounts.first(where: { $0.id == pinnedId })
+        else {
+            return nil
+        }
+        let limits = usage(for: account)
+        return "5h \(limits.fiveHourDisplay)  W \(limits.weeklyDisplay)"
+    }
+
+    func isPinnedToMenuBar(accountId: String?) -> Bool {
+        guard let accountId else { return false }
+        return menuBarPinnedAccountId == accountId
+    }
+
+    func toggleMenuBarLimits(accountId: String?) {
+        guard let accountId else { return }
+        if menuBarPinnedAccountId == accountId {
+            menuBarPinnedAccountId = nil
+        } else {
+            menuBarPinnedAccountId = accountId
+        }
+        UsagePreferences.menuBarPinnedAccountId = menuBarPinnedAccountId
+    }
 
     func startListening(session: FirebaseSession) {
         firestore = FirestoreRESTService(session: session, ownerUid: session.userId)
@@ -108,6 +135,9 @@ final class AccountsViewModel {
         usageByAccountId.removeValue(forKey: accountId)
         refreshingAccountIds.remove(accountId)
         refreshingUsageAccountIds.remove(accountId)
+        if menuBarPinnedAccountId == accountId {
+            toggleMenuBarLimits(accountId: accountId)
+        }
         await refreshAccounts()
     }
 

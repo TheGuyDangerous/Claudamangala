@@ -12,6 +12,8 @@ struct AccountRowView: View {
     let onRefreshUsage: () -> Void
     let onEdit: () -> Void
     let onDelete: () -> Void
+    let isPinnedToMenuBar: Bool
+    let onToggleMenuBarLimits: () -> Void
 
     @State private var justCopied = false
 
@@ -29,6 +31,14 @@ struct AccountRowView: View {
                 Spacer(minLength: 4)
 
                 ToolbarIconCluster {
+                    ToolbarIconButton(
+                        systemName: isPinnedToMenuBar ? "eye.fill" : "eye",
+                        help: isPinnedToMenuBar
+                            ? "Hide limits from the menu bar"
+                            : "Show this account's limits in the menu bar"
+                    ) {
+                        onToggleMenuBarLimits()
+                    }
                     ToolbarIconButton(systemName: "square.and.pencil", help: "Edit label and credentials") {
                         onEdit()
                     }

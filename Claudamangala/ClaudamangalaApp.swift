@@ -19,9 +19,23 @@ struct ClaudamangalaApp: App {
                 await updateViewModel.checkOnLaunchIfNeeded()
             }
         } label: {
+            MenuBarStatusLabel(accountsViewModel: accountsViewModel)
+        }
+        .menuBarExtraStyle(.window)
+    }
+}
+
+private struct MenuBarStatusLabel: View {
+    @Bindable var accountsViewModel: AccountsViewModel
+
+    var body: some View {
+        HStack(spacing: 6) {
+            if let caption = accountsViewModel.menuBarUsageCaption {
+                Text(caption)
+                    .font(.system(size: 11, weight: .medium).monospacedDigit())
+            }
             Image("MenuBarIcon")
                 .renderingMode(.template)
         }
-        .menuBarExtraStyle(.window)
     }
 }
