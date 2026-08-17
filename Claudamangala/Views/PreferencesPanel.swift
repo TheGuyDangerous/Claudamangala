@@ -200,16 +200,36 @@ struct PreferencesPanel: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(LocalRefreshSchedule.allCases) { schedule in
-                    preferenceOption(
-                        title: schedule.title,
-                        subtitle: localRefreshScheduleSubtitle(for: schedule),
-                        isSelected: localRefreshSchedule == schedule
-                    ) {
-                        localRefreshScheduleRaw = schedule.rawValue
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Interval")
+                        .font(.body.weight(.medium))
+                    Text(localRefreshScheduleSubtitle(for: localRefreshSchedule))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 8)
+
+                Picker("Interval", selection: $localRefreshScheduleRaw) {
+                    ForEach(LocalRefreshSchedule.allCases) { schedule in
+                        Text(schedule.title).tag(schedule.rawValue)
                     }
                 }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .fixedSize()
+            }
+            .padding(10)
+            .background {
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.primary.opacity(0.04))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+                    }
             }
         }
     }
