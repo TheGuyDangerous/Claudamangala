@@ -7,8 +7,8 @@ final class AccountsViewModel {
     var accounts: [ClaudeAccount] = []
     var lastActionError: String?
     var permissionDenied = false
+    var isLoadingAccounts = false
 
-    private var pollTask: Task<Void, Never>?
     private var firestore: FirestoreRESTService?
     private var pipeline: PipelineTriggerService?
     var refreshingAccountIds: Set<String> = []
@@ -16,24 +16,18 @@ final class AccountsViewModel {
     var usageByAccountId: [String: ClaudeAccountUsage] = [:]
 
     private var usageRefreshTask: Task<Void, Never>?
+    private var menuFetchTask: Task<Void, Never>?
     private var menuIsOpen = false
 
     func startListening(session: FirebaseSession) {
+        guard firestore == nil else { return }
         firestore = FirestoreRESTService(session: session)
         pipeline = PipelineTriggerService(session: session, firestore: firestore!)
-        guard pollTask == nil else { return }
-
-        pollTask = Task {
-            while !Task.isCancelled {
-                await refreshAccounts()
-                try? await Task.sleep(for: .seconds(5))
-            }
-        }
     }
 
     func stopListening() {
-        pollTask?.cancel()
-        pollTask = nil
+        menuFetchTask?.cancel()
+        menuFetchTask = nil
         usageRefreshTask?.cancel()
         usageRefreshTask = nil
         firestore = nil
@@ -44,10 +38,15 @@ final class AccountsViewModel {
         usageByAccountId = [:]
         permissionDenied = false
         lastActionError = nil
+        isLoadingAccounts = false
+        menuIsOpen = false
     }
 
-    private func refreshAccounts() async {
+    func refreshAccounts() async {
         guard let firestore else { return }
+        isLoadingAccounts = true
+        defer { isLoadingAccounts = false }
+
         do {
             accounts = try await firestore.fetchAccounts()
             permissionDenied = false
@@ -129,14 +128,21 @@ final class AccountsViewModel {
 
     func menuDidOpen() {
         menuIsOpen = true
-        hydrateUsageFromAccounts()
-        if UsagePreferences.fetchOnMenuOpen {
-            refreshUsageFromAPIForAllAccounts()
+        menuFetchTask?.cancel()
+        menuFetchTask = Task {
+            await refreshAccounts()
+            if Task.isCancelled { return }
+            hydrateUsageFromAccounts()
+            if UsagePreferences.fetchOnMenuOpen {
+                refreshUsageFromAPIForAllAccounts()
+            }
         }
     }
 
     func menuDidClose() {
         menuIsOpen = false
+        menuFetchTask?.cancel()
+        menuFetchTask = nil
         usageRefreshTask?.cancel()
         usageRefreshTask = nil
         usageByAccountId = [:]

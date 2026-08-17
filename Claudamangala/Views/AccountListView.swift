@@ -90,6 +90,14 @@ struct AccountListView: View {
                 Text("Access denied — check Firebase Auth configuration.")
                     .font(.caption)
                     .foregroundStyle(.red)
+            } else if accountsViewModel.isLoadingAccounts && accountsViewModel.accounts.isEmpty {
+                HStack(spacing: 8) {
+                    ProgressView().controlSize(.small)
+                    Text("Loading accounts…")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 8)
             } else if accountsViewModel.accounts.isEmpty {
                 Text("No accounts yet — click + to add one.")
                     .font(.caption)
