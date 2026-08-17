@@ -1,5 +1,10 @@
 import SwiftUI
 
+private enum AccountListLayout {
+    /// Fixed scroll viewport — ScrollView collapses without an explicit height in menu-bar windows.
+    static let scrollHeight: CGFloat = 480
+}
+
 private enum AccountPanel: Equatable {
     case list
     case preferences
@@ -90,10 +95,10 @@ struct AccountListView: View {
                 .buttonStyle(.plain)
             }
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 accountListBody
             }
-            .frame(maxHeight: 460)
+            .frame(height: AccountListLayout.scrollHeight)
 
             if let error = accountsViewModel.lastActionError {
                 Text(error)
@@ -122,7 +127,7 @@ struct AccountListView: View {
                 Text("No accounts yet — click + to add one.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, minHeight: AccountListLayout.scrollHeight - 16, alignment: .topLeading)
                     .padding(.vertical, 8)
             } else {
                 ForEach(accountsViewModel.accounts, id: \.listId) { account in
