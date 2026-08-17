@@ -29,7 +29,7 @@ private struct MenuBarStatusLabel: View {
     @Bindable var accountsViewModel: AccountsViewModel
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 12) {
             if let caption = accountsViewModel.menuBarUsageCaption {
                 Text(caption)
                     .font(.system(size: 11, weight: .medium).monospacedDigit())
