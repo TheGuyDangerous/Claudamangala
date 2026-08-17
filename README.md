@@ -21,6 +21,7 @@ A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored i
 - **Rename / Add** — inline panels (no sheets — works reliably inside `MenuBarExtra`)
 - **Launch at login** — optional toggle in Preferences
 - **Auto-update** — checks GitHub Releases for a newer DMG and can install to Applications
+- **Scheduled local refresh** — optional 1h / 2h / 4h / 6h automatic token refresh while the app is running
 - **Glass UI** — compact ~400px popup, no system blue accent
 
 ## How it fits together
@@ -182,6 +183,8 @@ CLAUDAMANGALA_EMAIL=you@example.com CLAUDAMANGALA_PASSWORD=secret ./scripts/capt
 
 Optional env vars sign in before capture. Grant **Accessibility** and **Screen Recording** to Terminal when prompted.
 
-## License
+---
 
-MIT — use at your own risk. OAuth tokens are sensitive; only share the app with people you trust. Claude® and the Claude spark are trademarks of Anthropic; this is an unofficial tool.
+<p align="center">
+  <sub>© 2026 Sannidhya Dubey · <a href="LICENSE">Proprietary License</a> · Personal, non-commercial use only</sub>
+</p>
