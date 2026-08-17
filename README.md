@@ -98,6 +98,21 @@ cp Claudamangala/PipelineConfig.plist.example Claudamangala/PipelineConfig.plist
 
 `PipelineConfig.plist` is gitignored and bundled into the app at build time.
 
+### 3b. Add OAuth config (local token refresh)
+
+Copy the example and fill in the Claude OAuth client settings (not committed to the public repo):
+
+```bash
+cp Claudamangala/OAuthConfig.plist.example Claudamangala/OAuthConfig.plist
+```
+
+| Key | Description |
+|-----|-------------|
+| `clientId` | OAuth client ID used by Claude Code token refresh |
+| `tokenEndpoint` | HTTPS URL for the OAuth token exchange |
+
+`OAuthConfig.plist` is gitignored and bundled into release builds. Signed-in users can also load the same values from Firestore `app_config/oauth` if the plist is absent.
+
 ### 4. Build and run
 
 ```bash
@@ -117,6 +132,7 @@ Set these repository secrets on **this** repo:
 |--------|-------|
 | `GOOGLE_SERVICE_INFO_PLIST_BASE64` | `base64 -i Claudamangala/GoogleService-Info.plist` |
 | `PIPELINE_CONFIG_PLIST_BASE64` | `base64 -i Claudamangala/PipelineConfig.plist` |
+| `OAUTH_CONFIG_PLIST_BASE64` | `base64 -i Claudamangala/OAuthConfig.plist` |
 
 The DMG is **ad-hoc signed, not notarized**. macOS may block the first launch.
 
@@ -139,7 +155,9 @@ You only need to do this once per Mac.
 
 **Why this matters:** rules like `request.auth.uid == "YOUR_UID"` only allow the owner on `claude_accounts`. Friends will see “Firestore access denied” when adding accounts until `claude_accounts` allows any authenticated user.
 
-**Cloud refresh (owner only):** Claudamangala shows Local/Cloud manual refresh only if Firestore rules grant read access to `app_config` (see `app_config` match in `firestore.rules`). Add another UID there to grant cloud refresh — no app rebuild required.
+**Cloud refresh (owner only):** Claudamangala shows Local/Cloud manual refresh only if Firestore rules grant read access to `app_config/pipeline`. Add another UID there to grant cloud refresh — no app rebuild required.
+
+**OAuth endpoint:** The token refresh URL and client ID are not in source code. They ship inside the DMG via `OAuthConfig.plist` and/or Firestore `app_config/oauth` (readable by signed-in users only).
 
 ## Refresh flow
 
@@ -159,7 +177,8 @@ Claudamangala/
 ├── ViewModels/                 # Auth + accounts state
 ├── Services/                   # Firebase REST, Firestore, pipeline, Keychain
 ├── GoogleService-Info.plist    # gitignored — Firebase config
-└── PipelineConfig.plist        # gitignored — refresh trigger config
+├── PipelineConfig.plist        # gitignored — refresh trigger config
+└── OAuthConfig.plist           # gitignored — OAuth client + token endpoint
 
 docs/
 ├── menubar-icon.png

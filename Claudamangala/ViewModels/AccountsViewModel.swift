@@ -127,9 +127,13 @@ final class AccountsViewModel {
         defer { refreshingAccountIds.remove(accountId) }
 
         let account = try await firestore.fetchAccount(id: accountId)
+        let oauthConfig = try await OAuthConfigLoader.load(firestore: firestore)
 
         do {
-            let result = try await ClaudeOAuthRefreshService.refresh(refreshToken: account.refreshToken)
+            let result = try await ClaudeOAuthRefreshService.refresh(
+                refreshToken: account.refreshToken,
+                config: oauthConfig
+            )
             try await firestore.updateOAuthRefreshSuccess(
                 accountId: accountId,
                 accessToken: result.accessToken,

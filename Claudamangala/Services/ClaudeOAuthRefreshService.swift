@@ -1,8 +1,6 @@
 import Foundation
 
 enum ClaudeOAuthRefreshService {
-    private static let clientID = "YOUR_CLAUDE_OAUTH_CLIENT_ID"
-    private static let tokenEndpoint = URL(string: "https://your-oauth-provider.example/v1/oauth/token")!
     private static let defaultExpiresIn: TimeInterval = 28_800
     private static let maxRetries = 3
     private static let initialRetryDelay: TimeInterval = 30
@@ -13,7 +11,7 @@ enum ClaudeOAuthRefreshService {
         let expiresAt: Double
     }
 
-    static func refresh(refreshToken: String) async throws -> Result {
+    static func refresh(refreshToken: String, config: OAuthConfig) async throws -> Result {
         var attempt = 0
         var retryDelay = initialRetryDelay
 
@@ -21,7 +19,7 @@ enum ClaudeOAuthRefreshService {
             attempt += 1
 
             do {
-                return try await performRefresh(refreshToken: refreshToken)
+                return try await performRefresh(refreshToken: refreshToken, config: config)
             } catch let error as ClaudeOAuthRefreshError {
                 if case .rateLimited = error, attempt < maxRetries {
                     try await Task.sleep(for: .seconds(retryDelay))
@@ -35,8 +33,8 @@ enum ClaudeOAuthRefreshService {
         throw ClaudeOAuthRefreshError.rateLimited
     }
 
-    private static func performRefresh(refreshToken: String) async throws -> Result {
-        var request = URLRequest(url: tokenEndpoint)
+    private static func performRefresh(refreshToken: String, config: OAuthConfig) async throws -> Result {
+        var request = URLRequest(url: config.tokenEndpoint)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("Claudamangala/1.0", forHTTPHeaderField: "User-Agent")
@@ -46,7 +44,7 @@ enum ClaudeOAuthRefreshService {
         let body = [
             "grant_type=refresh_token",
             "refresh_token=\(encodedRefreshToken)",
-            "client_id=\(clientID)",
+            "client_id=\(config.clientId)",
         ].joined(separator: "&")
         request.httpBody = body.data(using: .utf8)
 

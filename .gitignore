@@ -13,6 +13,7 @@ xcuserdata/
 
 GoogleService-Info.plist
 PipelineConfig.plist
+OAuthConfig.plist
 
 *.dmg
 build-output/

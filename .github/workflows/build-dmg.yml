@@ -44,6 +44,18 @@ jobs:
           echo "$PIPELINE_CONFIG_PLIST_BASE64" | base64 --decode > Claudamangala/PipelineConfig.plist
           echo "✓ PipelineConfig.plist restored (never committed to the repo)"
 
+      - name: Restore OAuthConfig.plist
+        env:
+          OAUTH_CONFIG_PLIST_BASE64: ${{ secrets.OAUTH_CONFIG_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "$OAUTH_CONFIG_PLIST_BASE64" ]; then
+            echo "::error::OAUTH_CONFIG_PLIST_BASE64 secret is not set."
+            exit 1
+          fi
+          echo "$OAUTH_CONFIG_PLIST_BASE64" | base64 --decode > Claudamangala/OAuthConfig.plist
+          echo "✓ OAuthConfig.plist restored (never committed to the repo)"
+
       - name: Generate Xcode project
         run: xcodegen generate
 

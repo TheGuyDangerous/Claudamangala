@@ -77,6 +77,32 @@ struct FirestoreRESTService {
         )
     }
 
+    func fetchOAuthConfig() async throws -> OAuthConfig {
+        let url = URL(string: "\(baseURL)/app_config/oauth")!
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw FirestoreRESTError.network }
+        if http.statusCode == 404 { throw OAuthConfigError.missing }
+        try throwIfHTTPError(data: data, response: response)
+
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        guard let fields = json?["fields"] as? [String: Any] else {
+            throw OAuthConfigError.missing
+        }
+
+        guard
+            let clientId = FirestoreValue.stringValue(fields["clientId"]),
+            let tokenEndpointString = FirestoreValue.stringValue(fields["tokenEndpoint"]),
+            let tokenEndpoint = URL(string: tokenEndpointString)
+        else {
+            throw OAuthConfigError.missing
+        }
+
+        return OAuthConfig(clientId: clientId, tokenEndpoint: tokenEndpoint)
+    }
+
     func checkCloudRefreshAccess() async -> Bool {
         let url = URL(string: "\(baseURL)/app_config/pipeline")!
         var request = URLRequest(url: url)
