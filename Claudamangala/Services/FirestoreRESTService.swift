@@ -131,6 +131,67 @@ struct FirestoreRESTService {
         )
     }
 
+    func updateOAuthRefreshSuccess(
+        accountId: String,
+        accessToken: String,
+        refreshToken: String,
+        expiresAt: Double
+    ) async throws {
+        let now = FirestoreValue.timestamp()
+        let body: [String: Any] = [
+            "fields": [
+                "accessToken": FirestoreValue.string(accessToken),
+                "refreshToken": FirestoreValue.string(refreshToken),
+                "expiresAt": FirestoreValue.number(expiresAt),
+                "lastRefreshStatus": FirestoreValue.string("success"),
+                "lastError": FirestoreValue.null(),
+                "consecutiveFailures": FirestoreValue.integer(0),
+                "lastRefreshedAt": now,
+                "updatedAt": now,
+            ],
+        ]
+        try await patch(
+            path: "claude_accounts/\(accountId)",
+            body: body,
+            fieldPaths: [
+                "accessToken",
+                "refreshToken",
+                "expiresAt",
+                "lastRefreshStatus",
+                "lastError",
+                "consecutiveFailures",
+                "lastRefreshedAt",
+                "updatedAt",
+            ]
+        )
+    }
+
+    func updateOAuthRefreshFailure(
+        accountId: String,
+        error: String,
+        consecutiveFailures: Int
+    ) async throws {
+        let now = FirestoreValue.timestamp()
+        let body: [String: Any] = [
+            "fields": [
+                "lastRefreshStatus": FirestoreValue.string("failed"),
+                "lastError": FirestoreValue.string(error),
+                "consecutiveFailures": FirestoreValue.integer(consecutiveFailures),
+                "updatedAt": now,
+            ],
+        ]
+        try await patch(
+            path: "claude_accounts/\(accountId)",
+            body: body,
+            fieldPaths: [
+                "lastRefreshStatus",
+                "lastError",
+                "consecutiveFailures",
+                "updatedAt",
+            ]
+        )
+    }
+
     func updateUsageSnapshot(
         accountId: String,
         fiveHourAvailable: Double?,

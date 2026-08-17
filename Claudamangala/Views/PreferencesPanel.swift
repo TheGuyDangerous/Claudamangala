@@ -2,7 +2,12 @@ import SwiftUI
 
 struct PreferencesPanel: View {
     @AppStorage(UsagePreferences.fetchOnMenuOpenKey) private var fetchOnMenuOpen = false
+    @AppStorage(RefreshPreferences.oauthRefreshModeKey) private var oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
     let onFinished: () -> Void
+
+    private var oauthRefreshMode: OAuthRefreshMode {
+        OAuthRefreshMode(rawValue: oauthRefreshModeRaw) ?? .local
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -16,6 +21,32 @@ struct PreferencesPanel: View {
 
                 Text("Preferences")
                     .font(.headline)
+            }
+
+            Text("Token refresh")
+                .font(.subheadline.weight(.semibold))
+
+            Text("Choose how Refresh updates OAuth tokens in Firebase.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 10) {
+                preferenceOption(
+                    title: "Local refresh",
+                    subtitle: "Refresh tokens on this Mac and write straight to Firebase. Usually finishes in a few seconds.",
+                    isSelected: oauthRefreshMode == .local
+                ) {
+                    oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
+                }
+
+                preferenceOption(
+                    title: "Cloud refresh",
+                    subtitle: "Trigger the GitHub Actions pipeline and wait for it to update Firebase. Slower, but uses the same path as scheduled refreshes.",
+                    isSelected: oauthRefreshMode == .cloud
+                ) {
+                    oauthRefreshModeRaw = OAuthRefreshMode.cloud.rawValue
+                }
             }
 
             Text("Usage limits")
@@ -47,7 +78,7 @@ struct PreferencesPanel: View {
             Spacer(minLength: 0)
         }
         .padding(16)
-        .frame(width: 320)
+        .frame(width: 340)
     }
 
     private func preferenceOption(

@@ -144,7 +144,7 @@ struct AccountListView: View {
         guard let id = account.id else { return }
         Task {
             do {
-                try await accountsViewModel.triggerPipelineRefresh(accountId: id)
+                try await accountsViewModel.triggerRefresh(accountId: id)
             } catch {
                 refreshErrorMessage = error.localizedDescription
             }

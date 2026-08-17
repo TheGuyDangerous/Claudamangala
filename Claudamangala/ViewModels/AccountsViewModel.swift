@@ -86,6 +86,15 @@ final class AccountsViewModel {
         await refreshAccounts()
     }
 
+    func triggerRefresh(accountId: String?) async throws {
+        switch RefreshPreferences.oauthRefreshMode {
+        case .cloud:
+            try await triggerPipelineRefresh(accountId: accountId)
+        case .local:
+            try await triggerLocalRefresh(accountId: accountId)
+        }
+    }
+
     func triggerPipelineRefresh(accountId: String?) async throws {
         guard let accountId else { throw PipelineTriggerError.invalidAccount }
         guard let pipeline else { return }
@@ -95,6 +104,37 @@ final class AccountsViewModel {
 
         try await pipeline.triggerRefresh(accountId: accountId)
         await refreshAccounts()
+    }
+
+    func triggerLocalRefresh(accountId: String?) async throws {
+        guard let accountId else { throw PipelineTriggerError.invalidAccount }
+        guard let firestore else { return }
+
+        refreshingAccountIds.insert(accountId)
+        defer { refreshingAccountIds.remove(accountId) }
+
+        let account = try await firestore.fetchAccount(id: accountId)
+
+        do {
+            let result = try await ClaudeOAuthRefreshService.refresh(refreshToken: account.refreshToken)
+            try await firestore.updateOAuthRefreshSuccess(
+                accountId: accountId,
+                accessToken: result.accessToken,
+                refreshToken: result.refreshToken,
+                expiresAt: result.expiresAt
+            )
+            await refreshAccounts()
+        } catch {
+            let failures = account.consecutiveFailures + 1
+            let message = error.localizedDescription
+            try? await firestore.updateOAuthRefreshFailure(
+                accountId: accountId,
+                error: message,
+                consecutiveFailures: failures
+            )
+            await refreshAccounts()
+            throw error
+        }
     }
 
     func isRefreshing(accountId: String?) -> Bool {
