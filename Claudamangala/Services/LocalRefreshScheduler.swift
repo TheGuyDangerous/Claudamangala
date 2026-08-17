@@ -24,7 +24,6 @@ final class LocalRefreshScheduler {
         timerTask?.cancel()
         timerTask = nil
 
-        guard !RefreshPreferences.canUseCloudRefresh(email: email) else { return }
         guard let interval = LocalRefreshSchedulePreferences.schedule.interval else { return }
         guard accountsViewModel != nil else { return }
 
@@ -52,7 +51,6 @@ final class LocalRefreshScheduler {
     }
 
     private func runScheduledRefresh() async {
-        guard !RefreshPreferences.canUseCloudRefresh(email: signedInEmail) else { return }
         guard let accountsViewModel else { return }
         guard LocalRefreshSchedulePreferences.schedule.interval != nil else { return }
 

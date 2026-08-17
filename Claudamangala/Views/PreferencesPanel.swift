@@ -98,7 +98,7 @@ struct PreferencesPanel: View {
                     .font(.subheadline.weight(.semibold))
 
                 if canUseCloudRefresh {
-                    Text("Choose how Refresh updates OAuth tokens in Firebase.")
+                    Text("Choose how manual Refresh updates OAuth tokens in Firebase.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -125,28 +125,9 @@ struct PreferencesPanel: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-
-                    Text("Automatic local refresh")
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.top, 4)
-
-                    Text("While Claudamangala is running, refresh every account on a schedule and write back to Firebase. Enable Launch at login to keep this going in the background.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(LocalRefreshSchedule.allCases) { schedule in
-                            preferenceOption(
-                                title: schedule.title,
-                                subtitle: localRefreshScheduleSubtitle(for: schedule),
-                                isSelected: localRefreshSchedule == schedule
-                            ) {
-                                localRefreshScheduleRaw = schedule.rawValue
-                            }
-                        }
-                    }
                 }
+
+                automaticLocalRefreshSection
 
                 Text("Usage limits")
                     .font(.subheadline.weight(.semibold))
@@ -205,6 +186,38 @@ struct PreferencesPanel: View {
             }
             localRefreshScheduler.reschedule(email: userEmail)
         }
+    }
+
+    private var automaticLocalRefreshSection: some View {
+        Group {
+            Text("Automatic local refresh")
+                .font(.subheadline.weight(.semibold))
+                .padding(.top, 4)
+
+            Text(automaticLocalRefreshDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(LocalRefreshSchedule.allCases) { schedule in
+                    preferenceOption(
+                        title: schedule.title,
+                        subtitle: localRefreshScheduleSubtitle(for: schedule),
+                        isSelected: localRefreshSchedule == schedule
+                    ) {
+                        localRefreshScheduleRaw = schedule.rawValue
+                    }
+                }
+            }
+        }
+    }
+
+    private var automaticLocalRefreshDescription: String {
+        if canUseCloudRefresh {
+            return "While Claudamangala is running on this Mac, refresh every account locally on a schedule. This is separate from the GitHub Actions cron and from the manual Refresh mode above."
+        }
+        return "While Claudamangala is running, refresh every account on a schedule and write back to Firebase. Enable Launch at login to keep this going in the background."
     }
 
     private var isUpdateActionInProgress: Bool {
