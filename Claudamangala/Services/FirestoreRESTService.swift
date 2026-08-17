@@ -14,6 +14,12 @@ struct FirestoreAccountsFetchResult {
 
 struct FirestoreRESTService {
     let session: FirebaseSession
+    let ownerUid: String
+
+    init(session: FirebaseSession, ownerUid: String) {
+        self.session = session
+        self.ownerUid = ownerUid
+    }
 
     private var baseURL: String {
         "https://firestore.googleapis.com/v1/projects/\(FirebaseConfig.projectId)/databases/(default)/documents"
@@ -284,9 +290,14 @@ struct FirestoreRESTService {
         label: String,
         credentials: ClaudeOAuthCredentials
     ) async throws {
+        guard !ownerUid.isEmpty else {
+            throw FirestoreRESTError.permissionDenied
+        }
+
         let now = FirestoreValue.timestamp()
         let body: [String: Any] = [
             "fields": [
+                "ownerUid": FirestoreValue.string(ownerUid),
                 "label": FirestoreValue.string(label),
                 "accessToken": FirestoreValue.string(credentials.accessToken),
                 "refreshToken": FirestoreValue.string(credentials.refreshToken),
@@ -335,6 +346,8 @@ struct FirestoreRESTService {
 
         let id = name.split(separator: "/").last.map(String.init)
         guard
+            let ownerUid = FirestoreValue.stringValue(fields["ownerUid"]),
+            ownerUid == self.ownerUid,
             let label = FirestoreValue.stringValue(fields["label"]),
             let accessToken = FirestoreValue.stringValue(fields["accessToken"]),
             let refreshToken = FirestoreValue.stringValue(fields["refreshToken"]),
@@ -347,6 +360,7 @@ struct FirestoreRESTService {
 
         return ClaudeAccount(
             id: id,
+            ownerUid: ownerUid,
             label: label,
             accessToken: accessToken,
             refreshToken: refreshToken,

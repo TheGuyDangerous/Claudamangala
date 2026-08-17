@@ -2,6 +2,8 @@ import Foundation
 
 struct ClaudeAccount: Codable, Identifiable, Equatable {
     var id: String?
+    /// Firebase Auth UID of the user who owns this account document.
+    var ownerUid: String?
     var label: String
     var accessToken: String
     var refreshToken: String

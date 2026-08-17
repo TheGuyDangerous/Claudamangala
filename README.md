@@ -47,7 +47,7 @@ flowchart LR
 | Piece | Role |
 |-------|------|
 | **Claudamangala** | Menu-bar UI — sign in, list accounts, apply / copy / refresh |
-| **Firestore** | Shared account registry (`claude_accounts`) |
+| **Firestore** | Per-user account registry (`claude_accounts`, `ownerUid`) |
 | **Refresh pipeline** | Background job that keeps OAuth tokens fresh (hosted separately; you configure it once) |
 
 ## Requirements
@@ -149,11 +149,28 @@ You only need to do this once per Mac.
 ## Sharing with friends
 
 1. Create a Firebase Auth user for them (Email/Password).
-2. **Publish Firestore rules** so any signed-in user can use `claude_accounts` (see [`firestore.rules`](firestore.rules) in this repo). In Firebase Console → **Firestore → Rules**, replace owner-only UID checks on `claude_accounts` with `request.auth != null`, then **Publish**.
+2. **Publish Firestore rules** from [`firestore.rules`](firestore.rules) (each user only sees documents where `ownerUid` matches their Firebase UID).
 3. Send a built `.dmg` with `GoogleService-Info.plist` and `PipelineConfig.plist` already bundled, plus their login.
-4. They add accounts from their own Keychain via the **+** button.
+4. They add accounts from their own Keychain via the **+** button — new documents are tagged with their `ownerUid` automatically.
 
-**Why this matters:** rules like `request.auth.uid == "YOUR_UID"` only allow the owner on `claude_accounts`. Friends will see “Firestore access denied” when adding accounts until `claude_accounts` allows any authenticated user.
+Each user has a private `claude_accounts` slice. The GitHub Actions refresh job still refreshes all accounts (Admin SDK bypasses rules).
+
+### Migrating existing documents
+
+Before publishing the new rules, stamp `ownerUid` on documents that predate per-user isolation:
+
+```bash
+cd claude-token-keeper-core
+GOOGLE_APPLICATION_CREDENTIALS=path/to/serviceAccountKey.json \
+  node scripts/migrate-owner-uid.mjs --dry-run
+
+GOOGLE_APPLICATION_CREDENTIALS=path/to/serviceAccountKey.json \
+  node scripts/migrate-owner-uid.mjs
+
+node scripts/deploy-firestore-rules.mjs
+```
+
+Default owner UID is the project owner (`tRrq8mT9vaVVacjbo5OPHFMK53L2`). Pass `--owner-uid` to assign docs to another Firebase user.
 
 **Cloud refresh (owner only):** Claudamangala shows Local/Cloud manual refresh only if Firestore rules grant read access to `app_config/pipeline`. Add another UID there to grant cloud refresh — no app rebuild required.
 
