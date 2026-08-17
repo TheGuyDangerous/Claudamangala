@@ -44,7 +44,7 @@ struct MenuBarContentView: View {
                     Button {
                         NSApplication.shared.terminate(nil)
                     } label: {
-                        footerActionLabel("Quit", shortcut: "⌘Q")
+                        footerActionLabel("Quit", shortcut: "⌘Q", shortcutFirst: true)
                     }
                     .buttonStyle(.plain)
                     .keyboardShortcut("q", modifiers: .command)
@@ -86,12 +86,19 @@ struct MenuBarContentView: View {
         )
     }
 
-    private func footerActionLabel(_ title: String, shortcut: String) -> some View {
+    private func footerActionLabel(_ title: String, shortcut: String, shortcutFirst: Bool = false) -> some View {
         HStack(spacing: 6) {
-            Text(title)
-            Text(shortcut)
-                .font(.caption.weight(.medium).monospaced())
-                .foregroundStyle(.tertiary)
+            if shortcutFirst {
+                Text(shortcut)
+                    .font(.caption.weight(.medium).monospaced())
+                    .foregroundStyle(.tertiary)
+                Text(title)
+            } else {
+                Text(title)
+                Text(shortcut)
+                    .font(.caption.weight(.medium).monospaced())
+                    .foregroundStyle(.tertiary)
+            }
         }
     }
 }
