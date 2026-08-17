@@ -10,9 +10,6 @@ targets:
     platform: macOS
     sources:
       - path: Claudamangala
-        excludes:
-          - "Claudamangala.icon"
-          - "Claudamangala.icon/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.sannidhya.claude
@@ -20,7 +17,7 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_STYLE: Automatic
         SWIFT_VERSION: "5.0"
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_APPICON_NAME: Claudamangala
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
     info:
       path: Claudamangala/Info.plist
