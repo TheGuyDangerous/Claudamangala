@@ -158,7 +158,7 @@ struct PreferencesPanel: View {
             .padding(16)
         }
         .frame(width: 340)
-        .frame(maxHeight: 520)
+        .frame(minHeight: 480, maxHeight: 520)
         .onAppear {
             launchAtLogin = LaunchPreferences.isRegisteredWithSystem
             if !canUseCloudRefresh, oauthRefreshModeRaw == OAuthRefreshMode.cloud.rawValue {

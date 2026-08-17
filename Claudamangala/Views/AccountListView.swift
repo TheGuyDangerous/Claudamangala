@@ -99,6 +99,7 @@ struct AccountListView: View {
                 Text("No accounts yet — click + to add one.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
                     .padding(.vertical, 8)
             } else {
                 ForEach(accountsViewModel.accounts, id: \.listId) { account in
