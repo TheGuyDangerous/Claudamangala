@@ -83,11 +83,6 @@ struct FirestoreRESTService {
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
 
         let (data, response) = try await URLSession.shared.data(for: request)
-        if let http = response as? HTTPURLResponse, http.statusCode == 403 {
-            // Firestore returns 403 when the user can read zero documents in the collection.
-            // Normal for a new user who has not added any accounts yet.
-            return FirestoreAccountsFetchResult(accounts: [], skippedDocumentCount: 0)
-        }
         try throwIfHTTPError(data: data, response: response)
 
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]

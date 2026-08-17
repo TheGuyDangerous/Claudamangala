@@ -15,9 +15,11 @@ service cloud.firestore {
         allow create: if request.auth != null
                       && request.auth.uid == userId
                       && request.resource.data.ownerUid == request.auth.uid;
-        allow read, update, delete: if request.auth != null
-                                     && request.auth.uid == userId
-                                     && resource.data.ownerUid == request.auth.uid;
+        // Path is already scoped to users/{userId}; ownerUid on read would block collection list queries.
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow update, delete: if request.auth != null
+                               && request.auth.uid == userId
+                               && resource.data.ownerUid == request.auth.uid;
       }
     }
 
