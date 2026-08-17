@@ -2,19 +2,13 @@
   "fill-specializations": [
     {
       "value": {
-        "linear-gradient": [
-          "extended-srgb:0.16500,0.09000,0.25500,1.00000",
-          "extended-srgb:0.07000,0.04500,0.12500,1.00000"
-        ]
+        "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
       }
     },
     {
       "appearance": "dark",
       "value": {
-        "linear-gradient": [
-          "extended-srgb:0.20000,0.11000,0.30000,1.00000",
-          "extended-srgb:0.08000,0.05000,0.14000,1.00000"
-        ]
+        "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
       }
     }
   ],
@@ -25,7 +19,20 @@
         {
           "name": "Spark",
           "image-name": "cloud-spark.svg",
-          "glass": true
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.00000,0.00000,0.00000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            }
+          ]
         }
       ],
       "shadow": {

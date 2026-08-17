@@ -89,24 +89,17 @@ jobs:
       - name: Package DMG
         run: |
           set -euo pipefail
+          brew install create-dmg librsvg
           APP_PATH="build/Build/Products/Release/Claudamangala.app"
           if [ ! -d "$APP_PATH" ]; then
             echo "::error::Built app not found at $APP_PATH"
             exit 1
           fi
 
-          mkdir -p dist
-          cp -R "$APP_PATH" dist/
-          ln -s /Applications dist/Applications
-
           VERSION="${GITHUB_REF_NAME:-dev}"
           DMG_NAME="Claudamangala-${VERSION}.dmg"
-
-          hdiutil create -volname "Claudamangala" \
-            -srcfolder dist \
-            -ov -format UDZO \
-            "$DMG_NAME"
-
+          chmod +x scripts/package-dmg.sh
+          ./scripts/package-dmg.sh "$APP_PATH" "$DMG_NAME"
           echo "DMG_NAME=$DMG_NAME" >> "$GITHUB_ENV"
 
       - name: Note on Gatekeeper (ad-hoc signed, not notarized)

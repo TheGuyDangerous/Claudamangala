@@ -124,7 +124,7 @@ Look for the **orange Claude spark** in the menu bar.
 
 ## Building a DMG (optional)
 
-Tag push `v*.*.*` or a manual run of [`.github/workflows/build-dmg.yml`](.github/workflows/build-dmg.yml) can produce a Release `.dmg`.
+Tag push `v*.*.*` or a manual run of [`.github/workflows/build-dmg.yml`](.github/workflows/build-dmg.yml) can produce a Release `.dmg` with a drag-to-Applications window (white background, app icon on the left, Applications on the right).
 
 Set these repository secrets on **this** repo:
 
