@@ -339,7 +339,7 @@ enum FirestoreRESTError: LocalizedError {
         case .network:
             return "No internet connection."
         case .permissionDenied:
-            return "Access denied — check Firebase Auth configuration."
+            return "Firestore access denied — publish the updated security rules in Firebase Console (see firestore.rules in this repo)."
         case .http(let code):
             return "Firestore request failed (HTTP \(code))."
         }

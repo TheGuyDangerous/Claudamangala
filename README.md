@@ -133,9 +133,11 @@ You only need to do this once per Mac.
 ## Sharing with friends
 
 1. Create a Firebase Auth user for them (Email/Password).
-2. Give them Firestore access to `claude_accounts` (rules that allow authenticated read/write).
+2. **Publish Firestore rules** so any signed-in user can use `claude_accounts` (see [`firestore.rules`](firestore.rules) in this repo). In Firebase Console → **Firestore → Rules**, replace owner-only UID checks on `claude_accounts` with `request.auth != null`, then **Publish**.
 3. Send a built `.dmg` with `GoogleService-Info.plist` and `PipelineConfig.plist` already bundled, plus their login.
 4. They add accounts from their own Keychain via the **+** button.
+
+**Why this matters:** rules like `request.auth.uid == "YOUR_UID"` only allow the owner. Friends will see “Firestore access denied” when adding accounts until `claude_accounts` allows any authenticated user.
 
 ## Refresh flow
 

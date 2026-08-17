@@ -82,7 +82,7 @@ struct AccountListView: View {
             }
 
             if accountsViewModel.permissionDenied {
-                Text("Access denied — check Firebase Auth configuration.")
+                Text("Firestore access denied — ask the project owner to publish the rules from firestore.rules.")
                     .font(.caption)
                     .foregroundStyle(.red)
             } else if accountsViewModel.isLoadingAccounts && accountsViewModel.accounts.isEmpty {
