@@ -11,6 +11,7 @@ private enum AccountPanel: Equatable {
 struct AccountListView: View {
     @Bindable var accountsViewModel: AccountsViewModel
     @Bindable var updateViewModel: UpdateViewModel
+    let localRefreshScheduler: LocalRefreshScheduler
     let userEmail: String?
 
     @State private var panel: AccountPanel = .list
@@ -24,6 +25,7 @@ struct AccountListView: View {
             case .preferences:
                 PreferencesPanel(
                     updateViewModel: updateViewModel,
+                    localRefreshScheduler: localRefreshScheduler,
                     userEmail: userEmail
                 ) {
                     panel = .list

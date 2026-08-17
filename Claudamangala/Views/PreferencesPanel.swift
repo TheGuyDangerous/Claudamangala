@@ -6,7 +6,9 @@ struct PreferencesPanel: View {
     @AppStorage(LaunchPreferences.launchAtLoginKey) private var launchAtLogin = false
     @AppStorage(UpdatePreferences.checkAutomaticallyKey) private var checkForUpdatesAutomatically = true
     @AppStorage(UpdatePreferences.installAutomaticallyKey) private var installUpdatesAutomatically = true
+    @AppStorage(LocalRefreshSchedulePreferences.scheduleKey) private var localRefreshScheduleRaw = LocalRefreshSchedule.off.rawValue
     @Bindable var updateViewModel: UpdateViewModel
+    let localRefreshScheduler: LocalRefreshScheduler
     let userEmail: String?
     let onFinished: () -> Void
 
@@ -18,6 +20,19 @@ struct PreferencesPanel: View {
 
     private var oauthRefreshMode: OAuthRefreshMode {
         RefreshPreferences.oauthRefreshMode(for: userEmail)
+    }
+
+    private var localRefreshSchedule: LocalRefreshSchedule {
+        LocalRefreshSchedule(rawValue: localRefreshScheduleRaw) ?? .off
+    }
+
+    private func localRefreshScheduleSubtitle(for schedule: LocalRefreshSchedule) -> String {
+        switch schedule {
+        case .off:
+            return "Only refresh when you tap Refresh on an account."
+        case .every1Hour, .every2Hours, .every4Hours, .every6Hours:
+            return "Runs automatically while this Mac is awake and Claudamangala is open."
+        }
     }
 
     var body: some View {
@@ -110,6 +125,27 @@ struct PreferencesPanel: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    Text("Automatic local refresh")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.top, 4)
+
+                    Text("While Claudamangala is running, refresh every account on a schedule and write back to Firebase. Enable Launch at login to keep this going in the background.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(LocalRefreshSchedule.allCases) { schedule in
+                            preferenceOption(
+                                title: schedule.title,
+                                subtitle: localRefreshScheduleSubtitle(for: schedule),
+                                isSelected: localRefreshSchedule == schedule
+                            ) {
+                                localRefreshScheduleRaw = schedule.rawValue
+                            }
+                        }
+                    }
                 }
 
                 Text("Usage limits")
@@ -162,6 +198,12 @@ struct PreferencesPanel: View {
         }
         .onChange(of: installUpdatesAutomatically) { _, enabled in
             UpdatePreferences.installAutomatically = enabled
+        }
+        .onChange(of: localRefreshScheduleRaw) { _, _ in
+            if localRefreshSchedule == .off {
+                LocalRefreshSchedulePreferences.lastRunAt = nil
+            }
+            localRefreshScheduler.reschedule(email: userEmail)
         }
     }
 

@@ -149,6 +149,26 @@ final class AccountsViewModel {
         }
     }
 
+    func refreshAllAccountsLocally() async {
+        guard firestore != nil else { return }
+
+        if accounts.isEmpty {
+            await refreshAccounts()
+        }
+
+        for account in accounts {
+            if Task.isCancelled { return }
+            guard let accountId = account.id else { continue }
+            guard !refreshingAccountIds.contains(accountId) else { continue }
+
+            do {
+                try await triggerLocalRefresh(accountId: accountId)
+            } catch {
+                continue
+            }
+        }
+    }
+
     func isRefreshing(accountId: String?) -> Bool {
         guard let accountId else { return false }
         return refreshingAccountIds.contains(accountId)

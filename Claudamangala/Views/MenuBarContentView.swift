@@ -4,6 +4,7 @@ struct MenuBarContentView: View {
     @Bindable var authViewModel: AuthViewModel
     @Bindable var accountsViewModel: AccountsViewModel
     @Bindable var updateViewModel: UpdateViewModel
+    let localRefreshScheduler: LocalRefreshScheduler
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,6 +21,7 @@ struct MenuBarContentView: View {
                 AccountListView(
                     accountsViewModel: accountsViewModel,
                     updateViewModel: updateViewModel,
+                    localRefreshScheduler: localRefreshScheduler,
                     userEmail: authViewModel.session?.email
                 )
                     .padding(16)
@@ -48,7 +50,12 @@ struct MenuBarContentView: View {
             if signedIn, let session = authViewModel.session {
                 accountsViewModel.startListening(session: session)
                 accountsViewModel.menuDidOpen()
+                localRefreshScheduler.start(
+                    accountsViewModel: accountsViewModel,
+                    email: session.email
+                )
             } else {
+                localRefreshScheduler.stop()
                 accountsViewModel.stopListening()
             }
         }
@@ -56,6 +63,10 @@ struct MenuBarContentView: View {
             guard !isRestoring, authViewModel.isSignedIn, let session = authViewModel.session else { return }
             accountsViewModel.startListening(session: session)
             accountsViewModel.menuDidOpen()
+            localRefreshScheduler.start(
+                accountsViewModel: accountsViewModel,
+                email: session.email
+            )
         }
         .onMenuBarWindowLifecycle(
             onOpen: {
