@@ -1,8 +1,15 @@
 import SwiftUI
 
 private enum AccountListLayout {
-    /// Fixed scroll viewport — ScrollView collapses without an explicit height in menu-bar windows.
+    /// Cap when many accounts are present. One account should hug its card height.
     static let scrollHeight: CGFloat = 480
+}
+
+private struct AccountListContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
 }
 
 private enum AccountPanel: Equatable {
@@ -21,6 +28,7 @@ struct AccountListView: View {
 
     @State private var panel: AccountPanel = .list
     @State private var lastAppliedAccountId: String?
+    @State private var accountListContentHeight: CGFloat = 0
 
     var body: some View {
         Group {
@@ -99,10 +107,19 @@ struct AccountListView: View {
             if accountsViewModel.accounts.isEmpty {
                 accountListBody
             } else {
-                ScrollView(.vertical, showsIndicators: true) {
+                ScrollView(.vertical, showsIndicators: accountListContentHeight > AccountListLayout.scrollHeight) {
                     accountListBody
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear.preference(
+                                    key: AccountListContentHeightKey.self,
+                                    value: proxy.size.height
+                                )
+                            }
+                        }
                 }
-                .frame(height: AccountListLayout.scrollHeight)
+                .onPreferenceChange(AccountListContentHeightKey.self) { accountListContentHeight = $0 }
+                .frame(height: min(max(accountListContentHeight, 1), AccountListLayout.scrollHeight))
             }
 
             if let error = accountsViewModel.lastActionError {
