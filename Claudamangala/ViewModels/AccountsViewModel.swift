@@ -68,6 +68,7 @@ final class AccountsViewModel {
         } catch let error as FirestoreRESTError {
             if case .permissionDenied = error {
                 permissionDenied = true
+                lastActionError = nil
             } else {
                 lastActionError = error.errorDescription
             }

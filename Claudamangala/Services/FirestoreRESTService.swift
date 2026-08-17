@@ -31,6 +31,11 @@ struct FirestoreRESTService {
         request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
 
         let (data, response) = try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse, http.statusCode == 403 {
+            // Firestore returns 403 when the user can read zero documents in the collection.
+            // Normal for a new user who has not added any accounts yet.
+            return FirestoreAccountsFetchResult(accounts: [], skippedDocumentCount: 0)
+        }
         try throwIfHTTPError(data: data, response: response)
 
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
@@ -177,6 +182,7 @@ struct FirestoreRESTService {
         guard let http = response as? HTTPURLResponse else { throw FirestoreRESTError.network }
         if http.statusCode == 404 { return false }
         if http.statusCode == 200 { return true }
+        if http.statusCode == 403 { return false }
         throw FirestoreRESTError.http(http.statusCode)
     }
 
@@ -346,8 +352,6 @@ struct FirestoreRESTService {
 
         let id = name.split(separator: "/").last.map(String.init)
         guard
-            let ownerUid = FirestoreValue.stringValue(fields["ownerUid"]),
-            ownerUid == self.ownerUid,
             let label = FirestoreValue.stringValue(fields["label"]),
             let accessToken = FirestoreValue.stringValue(fields["accessToken"]),
             let refreshToken = FirestoreValue.stringValue(fields["refreshToken"]),
@@ -360,7 +364,7 @@ struct FirestoreRESTService {
 
         return ClaudeAccount(
             id: id,
-            ownerUid: ownerUid,
+            ownerUid: FirestoreValue.stringValue(fields["ownerUid"]),
             label: label,
             accessToken: accessToken,
             refreshToken: refreshToken,
