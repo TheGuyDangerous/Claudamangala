@@ -4,7 +4,8 @@ private enum AccountPanel: Equatable {
     case list
     case preferences
     case add
-    case rename(accountId: String, currentLabel: String)
+    case edit(account: ClaudeAccount)
+    case delete(account: ClaudeAccount)
     case apply(account: ClaudeAccount)
 }
 
@@ -33,11 +34,17 @@ struct AccountListView: View {
                 AddAccountSheet(accountsViewModel: accountsViewModel) {
                     panel = .list
                 }
-            case .rename(let accountId, let currentLabel):
-                RenameSheet(
+            case .edit(let account):
+                EditAccountSheet(
                     accountsViewModel: accountsViewModel,
-                    accountId: accountId,
-                    currentLabel: currentLabel
+                    account: account
+                ) {
+                    panel = .list
+                }
+            case .delete(let account):
+                DeleteAccountPanel(
+                    accountsViewModel: accountsViewModel,
+                    account: account
                 ) {
                     panel = .list
                 }
@@ -134,9 +141,11 @@ struct AccountListView: View {
                         onRefreshUsage: {
                             accountsViewModel.refreshUsage(for: account)
                         },
-                        onRename: {
-                            guard let id = account.id else { return }
-                            panel = .rename(accountId: id, currentLabel: account.label)
+                        onEdit: {
+                            panel = .edit(account: account)
+                        },
+                        onDelete: {
+                            panel = .delete(account: account)
                         }
                     )
                     if account.listId != accountsViewModel.accounts.last?.listId {

@@ -248,6 +248,56 @@ struct FirestoreRESTService {
         )
     }
 
+    func updateAccount(
+        accountId: String,
+        label: String,
+        credentials: ClaudeOAuthCredentials
+    ) async throws {
+        let now = FirestoreValue.timestamp()
+        let body: [String: Any] = [
+            "fields": [
+                "label": FirestoreValue.string(label),
+                "accessToken": FirestoreValue.string(credentials.accessToken),
+                "refreshToken": FirestoreValue.string(credentials.refreshToken),
+                "expiresAt": FirestoreValue.number(credentials.expiresAt),
+                "scopes": FirestoreValue.stringArray(credentials.scopes),
+                "active": FirestoreValue.bool(true),
+                "lastRefreshStatus": FirestoreValue.string("never"),
+                "lastError": FirestoreValue.null(),
+                "consecutiveFailures": FirestoreValue.integer(0),
+                "lastRefreshedAt": FirestoreValue.null(),
+                "updatedAt": now,
+            ],
+        ]
+        try await patch(
+            path: accountPath(accountId),
+            body: body,
+            fieldPaths: [
+                "label",
+                "accessToken",
+                "refreshToken",
+                "expiresAt",
+                "scopes",
+                "active",
+                "lastRefreshStatus",
+                "lastError",
+                "consecutiveFailures",
+                "lastRefreshedAt",
+                "updatedAt",
+            ]
+        )
+    }
+
+    func deleteAccount(accountId: String) async throws {
+        let url = URL(string: "\(baseURL)/\(accountPath(accountId))")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("Bearer \(try await session.validIDToken())", forHTTPHeaderField: "Authorization")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try throwIfHTTPError(data: data, response: response)
+    }
+
     func updateOAuthRefreshSuccess(
         accountId: String,
         accessToken: String,

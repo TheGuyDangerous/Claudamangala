@@ -91,6 +91,26 @@ final class AccountsViewModel {
         }
     }
 
+    func updateAccount(
+        accountId: String,
+        label: String,
+        credentials: ClaudeOAuthCredentials
+    ) async throws {
+        guard let firestore else { return }
+        try await firestore.updateAccount(accountId: accountId, label: label, credentials: credentials)
+        usageByAccountId.removeValue(forKey: accountId)
+        await refreshAccounts()
+    }
+
+    func deleteAccount(accountId: String) async throws {
+        guard let firestore else { return }
+        try await firestore.deleteAccount(accountId: accountId)
+        usageByAccountId.removeValue(forKey: accountId)
+        refreshingAccountIds.remove(accountId)
+        refreshingUsageAccountIds.remove(accountId)
+        await refreshAccounts()
+    }
+
     func addAccount(label: String, credentials: ClaudeOAuthCredentials) async throws {
         guard let firestore else { return }
 

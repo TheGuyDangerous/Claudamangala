@@ -10,7 +10,8 @@ struct AccountRowView: View {
     let onApply: () -> Void
     let onRefresh: () -> Void
     let onRefreshUsage: () -> Void
-    let onRename: () -> Void
+    let onEdit: () -> Void
+    let onDelete: () -> Void
 
     @State private var justCopied = false
 
@@ -27,12 +28,21 @@ struct AccountRowView: View {
 
                 Spacer(minLength: 4)
 
-                Button(action: onRename) {
+                Button(action: onEdit) {
                     Image(systemName: "pencil")
                 }
                 .buttonStyle(.plain)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .help("Edit label and credentials")
+
+                Button(action: onDelete) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+                .foregroundStyle(.red.opacity(0.85))
+                .help("Delete account")
             }
 
             HStack(spacing: 12) {
