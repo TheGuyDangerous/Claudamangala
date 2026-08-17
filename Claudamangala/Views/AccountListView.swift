@@ -83,6 +83,22 @@ struct AccountListView: View {
                 .buttonStyle(.plain)
             }
 
+            ScrollView {
+                accountListBody
+            }
+            .frame(maxHeight: 460)
+
+            if let error = accountsViewModel.lastActionError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var accountListBody: some View {
+        VStack(alignment: .leading, spacing: 8) {
             if accountsViewModel.permissionDenied {
                 Text("Firestore access denied — ask the project owner to publish the rules from firestore.rules.")
                     .font(.caption)
@@ -128,13 +144,8 @@ struct AccountListView: View {
                     }
                 }
             }
-
-            if let error = accountsViewModel.lastActionError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func triggerRefresh(for account: ClaudeAccount) {
