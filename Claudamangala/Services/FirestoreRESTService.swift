@@ -341,7 +341,13 @@ private enum FirestoreValue {
     static func bool(_ value: Bool) -> [String: Any] { ["booleanValue": value] }
     static func integer(_ value: Int) -> [String: Any] { ["integerValue": "\(value)"] }
     static func number(_ value: Double) -> [String: Any] {
-        if value.rounded() == value {
+        guard value.isFinite else {
+            return ["doubleValue": "0"]
+        }
+        if value.rounded() == value,
+           value >= Double(Int.min),
+           value <= Double(Int.max)
+        {
             return ["integerValue": String(Int(value))]
         }
         return ["doubleValue": String(value)]

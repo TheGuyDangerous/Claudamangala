@@ -12,7 +12,6 @@ struct AccountListView: View {
     @Bindable var accountsViewModel: AccountsViewModel
 
     @State private var panel: AccountPanel = .list
-    @State private var refreshErrorMessage: String?
     @State private var lastAppliedAccountId: String?
 
     var body: some View {
@@ -51,17 +50,6 @@ struct AccountListView: View {
                     }
                 )
             }
-        }
-        .alert(
-            "Refresh Failed",
-            isPresented: Binding(
-                get: { refreshErrorMessage != nil },
-                set: { if !$0 { refreshErrorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(refreshErrorMessage ?? "")
         }
     }
 
@@ -104,8 +92,7 @@ struct AccountListView: View {
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
             } else {
-                ForEach(accountsViewModel.accounts.indices, id: \.self) { index in
-                    let account = accountsViewModel.accounts[index]
+                ForEach(accountsViewModel.accounts, id: \.listId) { account in
                     AccountRowView(
                         account: account,
                         usage: accountsViewModel.usage(for: account),
@@ -126,7 +113,7 @@ struct AccountListView: View {
                             panel = .rename(accountId: id, currentLabel: account.label)
                         }
                     )
-                    if index < accountsViewModel.accounts.count - 1 {
+                    if account.listId != accountsViewModel.accounts.last?.listId {
                         Divider()
                     }
                 }
@@ -142,11 +129,12 @@ struct AccountListView: View {
 
     private func triggerRefresh(for account: ClaudeAccount) {
         guard let id = account.id else { return }
-        Task {
+        Task { @MainActor in
             do {
+                accountsViewModel.lastActionError = nil
                 try await accountsViewModel.triggerRefresh(accountId: id)
             } catch {
-                refreshErrorMessage = error.localizedDescription
+                accountsViewModel.lastActionError = error.localizedDescription
             }
         }
     }

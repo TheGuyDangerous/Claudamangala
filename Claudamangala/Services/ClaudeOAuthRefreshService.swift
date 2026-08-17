@@ -42,9 +42,10 @@ enum ClaudeOAuthRefreshService {
         request.setValue("Claudamangala/1.0", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 30
 
+        let encodedRefreshToken = formURLEncode(refreshToken)
         let body = [
             "grant_type=refresh_token",
-            "refresh_token=\(refreshToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? refreshToken)",
+            "refresh_token=\(encodedRefreshToken)",
             "client_id=\(clientID)",
         ].joined(separator: "&")
         request.httpBody = body.data(using: .utf8)
@@ -110,6 +111,12 @@ enum ClaudeOAuthRefreshService {
         }
 
         return "HTTP \(statusCode)"
+    }
+
+    private static func formURLEncode(_ value: String) -> String {
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? value
     }
 }
 

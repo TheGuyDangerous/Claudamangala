@@ -25,6 +25,11 @@ struct ClaudeAccount: Codable, Identifiable, Equatable {
         fiveHourAvailable != nil || weeklyAvailable != nil
     }
 
+    /// Stable identity for SwiftUI lists (Firestore document id, or label fallback).
+    var listId: String {
+        id ?? label
+    }
+
     var expiresInDescription: String {
         let remainingMs = expiresAt - Date().timeIntervalSince1970 * 1000
         if remainingMs <= 0 { return "expired" }
