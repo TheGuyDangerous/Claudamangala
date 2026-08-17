@@ -17,7 +17,23 @@ final class FirebaseSession {
     }
 
     static func signIn(email: String, password: String) async throws -> FirebaseSession {
-        let url = URL(string: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=\(FirebaseConfig.apiKey)")!
+        try await authenticate(
+            endpoint: "accounts:signInWithPassword",
+            email: email,
+            password: password
+        )
+    }
+
+    static func signUp(email: String, password: String) async throws -> FirebaseSession {
+        try await authenticate(
+            endpoint: "accounts:signUp",
+            email: email,
+            password: password
+        )
+    }
+
+    private static func authenticate(endpoint: String, email: String, password: String) async throws -> FirebaseSession {
+        let url = URL(string: "https://identitytoolkit.googleapis.com/v1/\(endpoint)?key=\(FirebaseConfig.apiKey)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -174,18 +190,24 @@ enum FirebaseRESTError: LocalizedError {
         case .http(401), .http(400):
             return "Incorrect email or password."
         case .http(let code):
-            return "Sign-in failed (HTTP \(code))."
+            return "Authentication failed (HTTP \(code))."
         case .server(let message):
             switch message {
             case "INVALID_PASSWORD", "EMAIL_NOT_FOUND", "INVALID_LOGIN_CREDENTIALS":
                 return "Incorrect email or password."
+            case "EMAIL_EXISTS":
+                return "An account with this email already exists — try signing in."
+            case "WEAK_PASSWORD":
+                return "Password must be at least 6 characters."
+            case "OPERATION_NOT_ALLOWED":
+                return "Email sign-up is not enabled for this Firebase project."
             case "USER_DISABLED":
                 return "This account has been disabled."
             default:
-                return "Sign-in failed. Please try again."
+                return "Authentication failed. Please try again."
             }
         case .unexpectedResponse:
-            return "Sign-in failed. Please try again."
+            return "Authentication failed. Please try again."
         }
     }
 }

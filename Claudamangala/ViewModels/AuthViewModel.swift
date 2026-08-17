@@ -5,7 +5,7 @@ import Observation
 @Observable
 final class AuthViewModel {
     var session: FirebaseSession?
-    var signInError: String?
+    var authError: String?
     var isLoading = false
     var isRestoringSession = true
 
@@ -16,23 +16,39 @@ final class AuthViewModel {
     }
 
     func signIn(email: String, password: String) async {
-        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        await authenticate(email: email, password: password) {
+            try await FirebaseSession.signIn(email: $0, password: $1)
+        }
+    }
 
-        isLoading = true
-        signInError = nil
-        defer { isLoading = false }
-
-        do {
-            session = try await FirebaseSession.signIn(email: trimmedEmail, password: trimmedPassword)
-        } catch {
-            signInError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+    func signUp(email: String, password: String) async {
+        await authenticate(email: email, password: password) {
+            try await FirebaseSession.signUp(email: $0, password: $1)
         }
     }
 
     func signOut() {
         session?.signOut()
         session = nil
+    }
+
+    private func authenticate(
+        email: String,
+        password: String,
+        request: (String, String) async throws -> FirebaseSession
+    ) async {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPassword = password.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        isLoading = true
+        authError = nil
+        defer { isLoading = false }
+
+        do {
+            session = try await request(trimmedEmail, trimmedPassword)
+        } catch {
+            authError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        }
     }
 
     private func restoreSessionIfPossible() async {

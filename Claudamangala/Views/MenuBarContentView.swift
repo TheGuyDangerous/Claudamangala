@@ -14,7 +14,7 @@ struct MenuBarContentView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(24)
-                .frame(width: 280)
+                .frame(width: 300)
             } else if authViewModel.isSignedIn {
                 AccountListView(accountsViewModel: accountsViewModel)
                     .padding(16)
