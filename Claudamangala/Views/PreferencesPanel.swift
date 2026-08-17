@@ -19,7 +19,16 @@ struct PreferencesPanel: View {
     }
 
     private var oauthRefreshMode: OAuthRefreshMode {
-        RefreshPreferences.oauthRefreshMode(canUseCloudRefresh: canUseCloudRefresh)
+        OAuthRefreshMode(rawValue: oauthRefreshModeRaw) ?? .local
+    }
+
+    private var oauthRefreshModeSubtitle: String {
+        switch oauthRefreshMode {
+        case .local:
+            return "Refresh tokens on this Mac and write straight to Firebase."
+        case .cloud:
+            return "Trigger the GitHub Actions pipeline and wait for Firebase to update."
+        }
     }
 
     private var localRefreshSchedule: LocalRefreshSchedule {
@@ -103,22 +112,36 @@ struct PreferencesPanel: View {
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        preferenceOption(
-                            title: "Local refresh",
-                            subtitle: "Refresh tokens on this Mac and write straight to Firebase. Usually finishes in a few seconds.",
-                            isSelected: oauthRefreshMode == .local
-                        ) {
-                            oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
+                    HStack(alignment: .center, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Manual refresh")
+                                .font(.body.weight(.medium))
+                            Text(oauthRefreshModeSubtitle)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
 
-                        preferenceOption(
-                            title: "Cloud refresh",
-                            subtitle: "Trigger the GitHub Actions pipeline and wait for it to update Firebase. Slower, but uses the same path as scheduled refreshes.",
-                            isSelected: oauthRefreshMode == .cloud
-                        ) {
-                            oauthRefreshModeRaw = OAuthRefreshMode.cloud.rawValue
+                        Spacer(minLength: 8)
+
+                        Picker("Manual refresh", selection: $oauthRefreshModeRaw) {
+                            ForEach(OAuthRefreshMode.allCases, id: \.rawValue) { mode in
+                                Text(mode.title).tag(mode.rawValue)
+                            }
                         }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .fixedSize()
+                    }
+                    .padding(10)
+                    .background {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.primary.opacity(0.04))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+                            }
                     }
                 } else {
                     Text("OAuth tokens refresh locally on this Mac and save straight to Firebase.")
