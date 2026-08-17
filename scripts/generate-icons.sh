@@ -36,7 +36,7 @@ render "$APP_SVG" 1024 "$ASSETS/AppIcon.appiconset/icon_1024.png"
 
 DOCS="$ROOT/docs"
 mkdir -p "$DOCS/screenshots"
-cp "$MENUBAR_SVG" "$DOCS/claude-spark.svg"
+cp "$CLOUD_SVG" "$DOCS/claude-spark.svg"
 cp "$ASSETS/AppIcon.appiconset/icon_512.png" "$DOCS/app-icon.png"
 render "$MENUBAR_SVG" 144 "$DOCS/menubar-icon.png"
 
