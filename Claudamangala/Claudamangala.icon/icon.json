@@ -9,7 +9,7 @@
         {
           "name" : "Spark",
           "image-name" : "cloud-spark.svg",
-          "glass" : true,
+          "glass" : false,
           "fill" : {
             "solid" : "extended-srgb:0.00000,0.00000,0.00000,1.00000"
           }
@@ -17,12 +17,12 @@
       ],
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.32
+        "opacity" : 0.2
       },
-      "specular" : true,
+      "specular" : false,
       "translucency" : {
-        "enabled" : true,
-        "value" : 0.18
+        "enabled" : false,
+        "value" : 0
       }
     }
   ],
