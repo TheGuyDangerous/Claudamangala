@@ -12,6 +12,9 @@ final class AccountsViewModel {
     private var firestore: FirestoreRESTService?
     private var pipeline: PipelineTriggerService?
     var refreshingAccountIds: Set<String> = []
+    var usageByAccountId: [String: ClaudeAccountUsage] = [:]
+
+    private var usageRefreshTask: Task<Void, Never>?
 
     func startListening(session: FirebaseSession) {
         firestore = FirestoreRESTService(session: session)
@@ -29,10 +32,13 @@ final class AccountsViewModel {
     func stopListening() {
         pollTask?.cancel()
         pollTask = nil
+        usageRefreshTask?.cancel()
+        usageRefreshTask = nil
         firestore = nil
         pipeline = nil
         refreshingAccountIds = []
         accounts = []
+        usageByAccountId = [:]
         permissionDenied = false
         lastActionError = nil
     }
@@ -43,6 +49,7 @@ final class AccountsViewModel {
             accounts = try await firestore.fetchAccounts()
             permissionDenied = false
             lastActionError = nil
+            refreshUsageIfNeeded()
         } catch let error as FirestoreRESTError {
             if case .permissionDenied = error {
                 permissionDenied = true
@@ -102,6 +109,41 @@ final class AccountsViewModel {
             rateLimitTier: nil
         )
         try KeychainService.writeCredentials(credentials)
+    }
+
+    func usage(for account: ClaudeAccount) -> ClaudeAccountUsage {
+        guard let id = account.id else { return .unavailable }
+        return usageByAccountId[id] ?? .loading
+    }
+
+    private func refreshUsageIfNeeded() {
+        usageRefreshTask?.cancel()
+        let snapshot = accounts
+        usageRefreshTask = Task {
+            await refreshUsage(for: snapshot)
+        }
+    }
+
+    private func refreshUsage(for accounts: [ClaudeAccount]) async {
+        await withTaskGroup(of: (String, ClaudeAccountUsage).self) { group in
+            for account in accounts {
+                guard let id = account.id else { continue }
+                usageByAccountId[id] = .loading
+                group.addTask {
+                    do {
+                        let usage = try await ClaudeUsageService.fetch(accessToken: account.accessToken)
+                        return (id, usage)
+                    } catch {
+                        return (id, .unavailable)
+                    }
+                }
+            }
+
+            for await (id, usage) in group {
+                if Task.isCancelled { return }
+                usageByAccountId[id] = usage
+            }
+        }
     }
 }
 
