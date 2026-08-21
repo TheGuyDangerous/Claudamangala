@@ -6,8 +6,22 @@ struct ApplyConfirmPanel: View {
     let onFinished: () -> Void
     let onSuccess: (String) -> Void
 
+    @AppStorage(ApplyDestinationPreferences.destinationKey) private var applyDestinationRaw = ApplyDestination.keychain.rawValue
     @State private var applyError: String?
     @State private var isApplying = false
+
+    private var applyDestination: ApplyDestination {
+        ApplyDestination(rawValue: applyDestinationRaw) ?? .keychain
+    }
+
+    private var applyDestinationCopy: String {
+        switch applyDestination {
+        case .keychain:
+            return "This will replace the Claude Code session currently stored in the macOS Keychain."
+        case .credentialsFile:
+            return "This will write ~/.claude/.credentials.json. If that file is missing, it will be created; if it already exists, Apply updates the session inside it."
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -16,7 +30,7 @@ struct ApplyConfirmPanel: View {
             Text("Switch to \"\(account.label)\"?")
                 .font(.body)
 
-            Text("This will replace the Claude Code session currently active on this Mac.")
+            Text(applyDestinationCopy)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

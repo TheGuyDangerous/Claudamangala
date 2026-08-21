@@ -4,7 +4,7 @@
 
 # Claudamangala
 
-A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored in **Firebase Firestore**. Sign in, view token expiry, switch accounts to your Mac Keychain, copy credentials, or request a per-account token refresh.
+A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored in **Firebase Firestore**. Sign in, view token expiry, switch accounts onto this Mac (Keychain or `~/.claude/.credentials.json`), copy credentials, or request a per-account token refresh.
 
 <p align="center">
   <img src="docs/screenshots/app.png" alt="Claudamangala account list" width="420">
@@ -15,7 +15,7 @@ A native **macOS menu-bar app** for managing Claude Code OAuth accounts stored i
 - **Claude spark branding** — spark mark in the menu bar (transparent) and on the app icon
 - **Firebase sign-in** — email/password auth via REST (no Firebase SDK keychain issues on unsigned builds)
 - **Live account list** — polls Firestore every 5 seconds for expiry and refresh status
-- **Apply** — replaces the active `claudeAiOauth` Keychain entry on this Mac
+- **Apply** — writes the selected account's `claudeAiOauth` session to this Mac. Destination is a Preferences toggle: **macOS Keychain** (default) or **`~/.claude/.credentials.json`** (creates the file if it's missing; updates `claudeAiOauth` in place if it already exists)
 - **Copy** — copies `{"claudeAiOauth":{...}}` JSON to the clipboard
 - **Refresh** — asks a remote pipeline to refresh one account on demand
 - **Rename / Add** — inline panels (no sheets — works reliably inside `MenuBarExtra`)
@@ -31,7 +31,9 @@ flowchart LR
   subgraph macOS["Your Mac"]
     App[Claudamangala]
     KC[Keychain]
+    File["~/.claude/.credentials.json"]
     App --> KC
+    App --> File
   end
 
   subgraph cloud["Cloud"]
@@ -192,7 +194,7 @@ Claudamangala/
 ├── ClaudamangalaApp.swift      # MenuBarExtra entry
 ├── Views/                      # SwiftUI screens
 ├── ViewModels/                 # Auth + accounts state
-├── Services/                   # Firebase REST, Firestore, pipeline, Keychain
+├── Services/                   # Firebase REST, Firestore, pipeline, Keychain, credentials file
 ├── GoogleService-Info.plist    # gitignored — Firebase config
 ├── PipelineConfig.plist        # gitignored — refresh trigger config
 └── OAuthConfig.plist           # gitignored — OAuth client + token endpoint
