@@ -254,7 +254,12 @@ final class AccountsViewModel {
             subscriptionType: nil,
             rateLimitTier: nil
         )
-        try await KeychainService.writeCredentials(credentials)
+        switch ApplyDestinationPreferences.destination {
+        case .keychain:
+            try await KeychainService.writeCredentials(credentials)
+        case .credentialsFile:
+            try await ClaudeCredentialsFileService.writeCredentials(credentials)
+        }
     }
 
     func usage(for account: ClaudeAccount) -> ClaudeAccountUsage {

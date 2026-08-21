@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PreferencesPanel: View {
     @AppStorage(UsagePreferences.fetchOnMenuOpenKey) private var fetchOnMenuOpen = false
+    @AppStorage(ApplyDestinationPreferences.destinationKey) private var applyDestinationRaw = ApplyDestination.keychain.rawValue
     @AppStorage(RefreshPreferences.oauthRefreshModeKey) private var oauthRefreshModeRaw = OAuthRefreshMode.local.rawValue
     @AppStorage(LaunchPreferences.launchAtLoginKey) private var launchAtLogin = false
     @AppStorage(UpdatePreferences.checkAutomaticallyKey) private var checkForUpdatesAutomatically = true
@@ -16,6 +17,10 @@ struct PreferencesPanel: View {
 
     private var canUseCloudRefresh: Bool {
         accountsViewModel.canUseCloudRefresh
+    }
+
+    private var applyDestination: ApplyDestination {
+        ApplyDestination(rawValue: applyDestinationRaw) ?? .keychain
     }
 
     private var oauthRefreshMode: OAuthRefreshMode {
@@ -102,6 +107,32 @@ struct PreferencesPanel: View {
                     subtitle: "Download and replace the app in Applications, then relaunch. macOS may still ask you to approve the new build once.",
                     isOn: $installUpdatesAutomatically
                 )
+
+                Text("Apply")
+                    .font(.subheadline.weight(.semibold))
+
+                Text("Choose where the Apply button writes the selected Claude Code session on this Mac.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    preferenceOption(
+                        title: "macOS Keychain",
+                        subtitle: "Default. Replaces the Claude Code-credentials Keychain item Claude Code reads on this Mac.",
+                        isSelected: applyDestination == .keychain
+                    ) {
+                        applyDestinationRaw = ApplyDestination.keychain.rawValue
+                    }
+
+                    preferenceOption(
+                        title: ".claude folder",
+                        subtitle: "Write ~/.claude/.credentials.json. Creates the folder and file if they are missing; if the file already exists, Apply updates claudeAiOauth inside it and leaves other keys (like MCP tokens) alone.",
+                        isSelected: applyDestination == .credentialsFile
+                    ) {
+                        applyDestinationRaw = ApplyDestination.credentialsFile.rawValue
+                    }
+                }
 
                 Text("Token refresh")
                     .font(.subheadline.weight(.semibold))
